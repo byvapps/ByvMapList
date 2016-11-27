@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'ByvMapList_Example' do
+  pod 'ByvMapList', :path => '../'
+
+  target 'ByvMapList_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
