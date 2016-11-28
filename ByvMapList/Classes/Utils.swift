@@ -17,6 +17,11 @@ enum ByvPosition {
     case all
 }
 
+enum ByvDirection {
+    case vertical
+    case horizontal
+}
+
 extension UIView {
     func addTo(_ superView: UIView, position:ByvPosition = .all, insets: UIEdgeInsets = UIEdgeInsets.zero, centered:Bool = false, width: CGFloat? = nil, height: CGFloat? = nil) {
         
@@ -78,7 +83,7 @@ extension UIView {
         
     }
     
-    func addVertical(subViews:Array<UIView>, insets: UIEdgeInsets = UIEdgeInsets.zero, margin: CGFloat = 0.0, height: CGFloat? = nil) {
+    func add(subViews:Array<UIView>, direction:ByvDirection = .vertical, insets: UIEdgeInsets = UIEdgeInsets.zero, margin: CGFloat = 0.0, height: CGFloat? = nil) {
         
         var preView: UIView? = nil
         
@@ -86,12 +91,20 @@ extension UIView {
             view.translatesAutoresizingMaskIntoConstraints = false
             self.addSubview(view)
             let views = ["view" : view, "preView": preView]
-            var formatString = "H:|-(\(insets.left))-[view]-(\(insets.right))-|"
+            var formatString = "H:"
+            if direction == .horizontal {
+                formatString = "V:"
+            }
+            
+            formatString += "|-(\(insets.left))-[view]-(\(insets.right))-|"
             var constraints = NSLayoutConstraint.constraints(withVisualFormat: formatString, options:[] , metrics: nil, views: views)
             
             NSLayoutConstraint.activate(constraints)
             
             formatString = "V:"
+            if direction == .horizontal {
+                formatString = "H:"
+            }
             
             if let preView = preView {
                 formatString += "[preView]-(\(margin))-"
@@ -117,5 +130,57 @@ extension UIView {
             
             preView = view
         }
+    }
+    
+    func setHeight(_ height: CGFloat) {
+        if let hc = self.height() {
+            hc.constant = height
+        } else {
+            let heightConstraint = NSLayoutConstraint(item: self, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1, constant: height)
+            self.addConstraint(heightConstraint)
+        }
+    }
+    
+    func height() -> NSLayoutConstraint? {
+        return getConstraint(attribute: NSLayoutAttribute.height)
+    }
+    
+    func setWidth(_ width: CGFloat) {
+        if let wc = self.width() {
+            wc.constant = width
+        } else {
+            let widthConstraint = NSLayoutConstraint(item: self, attribute: NSLayoutAttribute.width, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1, constant: width)
+            self.addConstraint(widthConstraint)
+        }
+    }
+    
+    func width() -> NSLayoutConstraint? {
+        return getConstraint(attribute: NSLayoutAttribute.width)
+    }
+    
+    private func getConstraint(attribute: NSLayoutAttribute) -> NSLayoutConstraint? {
+        for constraint in self.constraints {
+            if constraint.firstAttribute == attribute {
+                return constraint
+            }
+        }
+        return nil
+    }
+    
+    
+    @discardableResult func round(corners: UIRectCorner, radius: CGFloat) -> CAShapeLayer {
+        let path = UIBezierPath(roundedRect: bounds, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        let mask = CAShapeLayer()
+        mask.path = path.cgPath
+        self.layer.mask = mask
+        return mask
+    }
+    
+    func addShadow(color: UIColor = UIColor.black, opacity: Float = 0.8, offset: CGSize = CGSize.zero, radius: CGFloat = 10.0 ) {
+        self.clipsToBounds = false
+        self.layer.shadowColor = color.cgColor
+        self.layer.shadowOpacity = opacity
+        self.layer.shadowOffset = offset
+        self.layer.shadowRadius = radius
     }
 }

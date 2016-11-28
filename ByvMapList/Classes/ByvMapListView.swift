@@ -7,8 +7,13 @@
 //
 
 import UIKit
-
 import MapKit
+
+enum ByvListState {
+    case header
+    case single
+    case list
+}
 
 protocol ByvMapListDataSource {
     
@@ -20,10 +25,15 @@ protocol ByvMapListDelegate {
 
 public class ByvMapListView: UIView, MKMapViewDelegate {
     
-    public var mapView:MKMapView = MKMapView()
-    private var listView:UIView = UIView()
-    private var listHeight:NSLayoutConstraint? = nil
-    private var headerView:UIView = UIView()
+    let minListTop: CGFloat = 20.0
+    
+    //CHange to real Cell
+    let cellHeight: CGFloat = 100.0
+    
+    public var mapView: MKMapView = MKMapView()
+    private var listView: UIView = UIView()
+    private var headerView: UIView = UIView()
+    private var listState:ByvListState = .header
     //public var collection:UICollectionView = UICollectionView()
     
     public override init(frame: CGRect) {
@@ -50,9 +60,10 @@ public class ByvMapListView: UIView, MKMapViewDelegate {
         var label = UILabel()
         label.text = "Prueba de Texto"
         
-        label.addTo(headerView, position: .all, centered: false, height: 50.0)
+        label.addTo(headerView, position: .all, centered: true)
         
         headerView.backgroundColor = UIColor.red
+        headerView.setHeight(50)
         
         let collectionView = UIView()
         collectionView.backgroundColor = UIColor.orange
@@ -60,21 +71,16 @@ public class ByvMapListView: UIView, MKMapViewDelegate {
         let cell = UIView()
         cell.backgroundColor = UIColor.blue
         
-        cell.addTo(collectionView, position: .top, height: 100.0)
+        cell.addTo(collectionView, position: .top,  height: cellHeight)
         
-        listView.backgroundColor = UIColor.green
         listView.addTo(self, position: .bottom, height: 100.0)
+        listView.backgroundColor = UIColor.white
+        listView.layer.cornerRadius = 20.0
+        listView.addShadow()
         
-        listView.addVertical(subViews: [headerView, collectionView], insets: UIEdgeInsetsMake(18, 0, 0, 0))
+        listView.add(subViews: [headerView, collectionView], insets: UIEdgeInsetsMake(18, 0, 0, 0))
         
-        for constraint in listView.constraints {
-            if constraint.firstAttribute == NSLayoutAttribute.height {
-                listHeight = constraint
-                break
-            }
-        }
-        
-        var pan = UIPanGestureRecognizer(target: self, action: #selector(panHandler(sender:)))
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(panHandler(sender:)))
         listView.addGestureRecognizer(pan)
         
 //        separator.translatesAutoresizingMaskIntoConstraints = false
@@ -101,6 +107,28 @@ public class ByvMapListView: UIView, MKMapViewDelegate {
 //        NSLayoutConstraint.activate(constraints)
     }
     
+    func changeToState(_ newState: ByvListState, animated:Bool = true) {
+        listState = newState
+        var height:CGFloat = 0.0
+        switch listState {
+        case .header:
+            height = self.headerHeight()
+        case .single:
+            height = self.headerHeight() + self.cellHeight
+        case .list:
+            height = self.bounds.size.height - minListTop
+        }
+            
+        if animated {
+            UIView.animate(withDuration: 0.3, animations: {
+                self.listView.height()?.constant = height
+                self.listView.layoutIfNeeded()
+            })
+        } else {
+            self.listView.height()?.constant = height
+        }
+    }
+    
     var startY:CGFloat = 0.0
     
     func panHandler(sender: UIPanGestureRecognizer) {
@@ -110,18 +138,47 @@ public class ByvMapListView: UIView, MKMapViewDelegate {
         }
         
         if sender.state == .changed {
-            var height = sender.location(in: self).y - startY
-            if height < 0 {
-               height = 0.0
-            }
-            height = self.bounds.size.height - height
-            let min = headerView.frame.origin.y + headerView.frame.size.height
-            if height < min {
-                height = min
-            }
+            let height = getListHeight(sender.location(in: self))
             
-            listHeight?.constant = height
+            listView.height()?.constant = height
         }
+        
+        if sender.state == .ended {
+            var height = getListHeight(sender.location(in: self)) - headerHeight()
+            
+            if height < cellHeight {
+                if height < cellHeight / 2.0 {
+                    changeToState(.header)
+                } else {
+                    changeToState(.single)
+                }
+            } else {
+                height -= cellHeight
+                if height < cellHeight {
+                    changeToState(.single)
+                } else {
+                    changeToState(.list)
+                }
+            }
+        }
+    }
+    
+    func headerHeight() -> CGFloat {
+        return headerView.frame.origin.y + headerView.frame.size.height
+    }
+    
+    func getListHeight(_ point:CGPoint) -> CGFloat {
+        var y = point.y - startY
+        if y < minListTop {
+            y = minListTop
+        }
+        var height = self.bounds.size.height - y
+        let min = headerHeight()
+        if height < min {
+            height = min
+        }
+        
+        return height
     }
 
     /*
