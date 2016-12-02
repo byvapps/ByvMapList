@@ -62,7 +62,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate {
         
         label.addTo(headerView, position: .all, centered: true)
         
-        headerView.backgroundColor = UIColor.red
+        headerView.backgroundColor = UIColor.white
         headerView.setHeight(50)
         
         let collectionView = UIView()

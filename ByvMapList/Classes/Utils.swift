@@ -83,7 +83,7 @@ extension UIView {
         
     }
     
-    func add(subViews:Array<UIView>, direction:ByvDirection = .vertical, insets: UIEdgeInsets = UIEdgeInsets.zero, margin: CGFloat = 0.0, height: CGFloat? = nil) {
+    func add(subViews:Array<UIView>, direction:ByvDirection = .vertical, insets: UIEdgeInsets = UIEdgeInsets.zero, margin: CGFloat = 0.0, size: CGFloat? = nil) {
         
         var preView: UIView? = nil
         
@@ -114,8 +114,8 @@ extension UIView {
             
             formatString += "[view"
             
-            if let _height = height {
-                formatString += "(\(_height))"
+            if let _size = size {
+                formatString += "(\(_size))"
             }
             
             formatString += "]"
@@ -165,15 +165,6 @@ extension UIView {
             }
         }
         return nil
-    }
-    
-    
-    @discardableResult func round(corners: UIRectCorner, radius: CGFloat) -> CAShapeLayer {
-        let path = UIBezierPath(roundedRect: bounds, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
-        let mask = CAShapeLayer()
-        mask.path = path.cgPath
-        self.layer.mask = mask
-        return mask
     }
     
     func addShadow(color: UIColor = UIColor.black, opacity: Float = 0.8, offset: CGSize = CGSize.zero, radius: CGFloat = 10.0 ) {
