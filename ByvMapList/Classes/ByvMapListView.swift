@@ -56,8 +56,13 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     private var listState:ByvListState = .header
     private var isScrollToEndAlerted:Bool = false
     
+    public func allItems() -> Array<Any> {
+        return items
+    }
+    
     public func reSetItems(_ newItems: Array<Any>) {
         isScrollToEndAlerted = false
+        selectedItem = nil
         items = newItems
         collectionView?.reloadData()
         collectionView?.scrollToItem(at: IndexPath.init(row: 0, section: 0), at: .top, animated: true)
@@ -77,6 +82,14 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         collectionView?.insertItems(at: rows)
         mapView.addAnnotations(newItems as! [MKAnnotation])
         mapView.showAnnotations(mapView.annotations, animated: true)
+    }
+    
+    public func addHeaderView(_ newHeader: UIView) {
+        for view in headerView.subviews {
+            view.removeFromSuperview()
+        }
+        headerView.setHeight(newHeader.bounds.size.height)
+        newHeader.addTo(headerView)
     }
     
     public func load(_ delegate:ByvMapListDelegate) {

@@ -16,11 +16,17 @@ class ViewController: UIViewController, ByvMapListDelegate {
     @IBOutlet var byvMapListView: ByvMapListView!
     
     var secondPageLoaded:Bool = false
+    var headerView = ListHeader.instanceFromNib()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         byvMapListView.load(self)
         byvMapListView.collectionView?.backgroundColor = UIColor(white: 0.9, alpha: 1.0)
+        
+        let button = headerView.viewWithTag(10) as! UIButton
+        button.addTarget(self, action: #selector(showSortList), for: .touchUpInside)
+        byvMapListView.addHeaderView(headerView)
+        byvMapListView.minListTop = 44.0
         refresh(self)
     }
 
@@ -42,6 +48,24 @@ class ViewController: UIViewController, ByvMapListDelegate {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func showSortList() {
+        let actionSheet = UIAlertController(title: "Sort by", message: nil, preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "Name", style: .default, handler: { (action) in
+            var items = self.byvMapListView.allItems()
+            items.sort {
+                let a = $0 as! GasStation
+                let b = $1 as! GasStation
+                
+                return a.name < b.name
+            }
+            self.byvMapListView.reSetItems(items)
+        }))
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .destructive, handler: { (action) in
+            actionSheet.dismiss(animated: true, completion: nil)
+        }))
+        self.present(actionSheet, animated: true, completion: nil)
     }
     
     func cellHeight() -> CGFloat {
@@ -67,12 +91,6 @@ class ViewController: UIViewController, ByvMapListDelegate {
         let vc = storyboard.instantiateViewController(withIdentifier: "DetailVC") as! DetailViewController
         vc.gasStation = item as? GasStation
         self.navigationController?.pushViewController(vc, animated: true)
-        /*
-        let station:GasStation = item as! GasStation
-        let alert = UIAlertController(title: "Selected", message: "Item (\(station.name))", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Close", style: .destructive, handler: nil))
-        self.present(alert, animated: true, completion: nil)
- */
     }
     
     func didScrollToEnd() {
