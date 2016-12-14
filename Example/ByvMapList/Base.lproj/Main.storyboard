@@ -17,10 +17,22 @@
                         <viewControllerLayoutGuide type="top" id="jyV-Pf-zRb"/>
                         <viewControllerLayoutGuide type="bottom" id="2fi-mo-0CV"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="kh9-bI-dsS" customClass="ByvMapListView" customModule="ByvMapList">
+                    <view key="view" contentMode="scaleToFill" id="kh9-bI-dsS">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="my4-XT-LwO" customClass="ByvMapListView" customModule="ByvMapList">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="my4-XT-LwO" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="2WZ-Us-8cO"/>
+                            <constraint firstItem="my4-XT-LwO" firstAttribute="top" secondItem="kh9-bI-dsS" secondAttribute="top" id="Hd3-o4-1YV"/>
+                            <constraint firstItem="2fi-mo-0CV" firstAttribute="top" secondItem="my4-XT-LwO" secondAttribute="bottom" id="b3U-w0-PSq"/>
+                            <constraint firstAttribute="trailing" secondItem="my4-XT-LwO" secondAttribute="trailing" id="wqE-fw-uCb"/>
+                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="xHZ-Yp-aql">
                         <barButtonItem key="rightBarButtonItem" systemItem="refresh" id="4bL-fR-QuU">
@@ -30,12 +42,12 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="byvMapListView" destination="kh9-bI-dsS" id="KFO-PY-vA3"/>
+                        <outlet property="byvMapListView" destination="my4-XT-LwO" id="LPL-Lb-Snb"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="503" y="103"/>
+            <point key="canvasLocation" x="501.60000000000002" y="102.99850074962519"/>
         </scene>
         <!--Detail View Controller-->
         <scene sceneID="3kL-ab-5kb">
@@ -107,7 +119,7 @@
         <scene sceneID="gfP-mB-Jjj">
             <objects>
                 <navigationController id="bht-Sp-gNb" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="qfZ-nk-qPh">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="qfZ-nk-qPh">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>

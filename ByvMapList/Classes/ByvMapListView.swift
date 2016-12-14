@@ -102,7 +102,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         mapView.delegate = self
         
         //listView
-        var separator = UIView()
+        let separator = UIView()
         separator.backgroundColor = UIColor.gray
         separator.layer.cornerRadius = 3
         
@@ -112,7 +112,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         headerView.setHeight(25)
         
         cellHeight = delegate.cellHeight()
-        var flowLayout = ByvFlowLayout()
+        let flowLayout = ByvFlowLayout()
         flowLayout.height = cellHeight
         flowLayout.width = self.bounds.size.width
         
@@ -244,7 +244,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         }
         
         if sender.state == .ended {
-            var height = getListHeight(sender.location(in: self)) - headerHeight()
+            let height = getListHeight(sender.location(in: self)) - headerHeight()
             updateListWithHeight(height)
         }
     }
@@ -291,14 +291,12 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
                 changeToState(.list)
             }
         } else if self.listState == .header {
-            let max = self.bounds.size.height - minListTop
             if height > cellHeight {
                 changeToState(.list)
             } else {
                 changeToState(.header)
             }
         } else if self.listState == .single {
-            let max = self.bounds.size.height - minListTop
             if height > cellHeight * 1.5 {
                 changeToState(.list)
             } else if height < cellHeight * 0.5 {
@@ -367,7 +365,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if listState != .single {
             if !decelerate {
-                var height = (listView.height()?.constant)!
+                let height = (listView.height()?.constant)!
                 updateListWithHeight(height)
             }
         }
