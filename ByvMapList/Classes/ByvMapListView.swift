@@ -60,6 +60,19 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         return items
     }
     
+    public func reloadCollectionViewLayout() {
+        if let delegate = delegate {
+            cellHeight = delegate.cellHeight()
+        }
+        let flowLayout = collectionView?.collectionViewLayout as! ByvFlowLayout
+        flowLayout.height = cellHeight
+        flowLayout.width = self.bounds.size.width
+        collectionView?.collectionViewLayout.invalidateLayout()
+        if listState == .single {
+            scrollToSelected()
+        }
+    }
+    
     public func reSetItems(_ newItems: Array<Any>) {
         isScrollToEndAlerted = false
         selectedItem = nil
