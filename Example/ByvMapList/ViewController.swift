@@ -15,23 +15,30 @@ class ViewController: UIViewController, ByvMapListDelegate {
 
     @IBOutlet var byvMapListView: ByvMapListView!
     
+    var secondPageLoaded:Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        byvMapListView.load(self)
+        byvMapListView.collectionView?.backgroundColor = UIColor(white: 0.9, alpha: 1.0)
+        refresh(self)
+    }
+
+    @IBAction func refresh(_ sender: Any) {
+        secondPageLoaded = false
         if let path = Bundle.main.path(forResource: "stations", ofType: "json") {
             do {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .alwaysMapped)
                 let items = JSON.init(data: data).arrayValue.map({ (json) -> GasStation in
                     return GasStation.init(fromJson: json)
                 })
-                byvMapListView.load(self)
                 byvMapListView.reSetItems(items)
             } catch let error {
                 print(error.localizedDescription)
             }
         }
-        
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -48,7 +55,7 @@ class ViewController: UIViewController, ByvMapListDelegate {
     func pinImage(_ item:MKAnnotation, selected:Bool) -> ByvPinImage {
         var image = UIImage(named: "pin")!
         if selected {
-//            image = UIImage(named: "pin_promo")!
+            image = UIImage(named: "pin_selected")!
         }
         let y = -image.size.height / 2.0
         let offset = CGPoint(x: 0, y: y)
@@ -66,6 +73,25 @@ class ViewController: UIViewController, ByvMapListDelegate {
         alert.addAction(UIAlertAction(title: "Close", style: .destructive, handler: nil))
         self.present(alert, animated: true, completion: nil)
  */
+    }
+    
+    func didScrollToEnd() {
+        // Load more
+        print("Scrolled to End")
+        if !secondPageLoaded {
+            secondPageLoaded = true
+            if let path = Bundle.main.path(forResource: "stations-2", ofType: "json") {
+                do {
+                    let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .alwaysMapped)
+                    let items = JSON.init(data: data).arrayValue.map({ (json) -> GasStation in
+                        return GasStation.init(fromJson: json)
+                    })
+                    byvMapListView.addMoreItems(items)
+                } catch let error {
+                    print(error.localizedDescription)
+                }
+            }
+        }
     }
     
     func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage {

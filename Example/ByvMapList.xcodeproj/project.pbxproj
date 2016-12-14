@@ -16,6 +16,7 @@
 		3AC9F40A1DFF034E00BEA72E /* GeoRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4061DFF034E00BEA72E /* GeoRegion.swift */; };
 		3AC9F40B1DFF034E00BEA72E /* StationRotule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4071DFF034E00BEA72E /* StationRotule.swift */; };
 		3AC9F4141E005C9100BEA72E /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4131E005C9100BEA72E /* DetailViewController.swift */; };
+		3AC9F4161E01881400BEA72E /* stations-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 3AC9F4151E01881400BEA72E /* stations-2.json */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -46,6 +47,7 @@
 		3AC9F4061DFF034E00BEA72E /* GeoRegion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeoRegion.swift; sourceTree = "<group>"; };
 		3AC9F4071DFF034E00BEA72E /* StationRotule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StationRotule.swift; sourceTree = "<group>"; };
 		3AC9F4131E005C9100BEA72E /* DetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
+		3AC9F4151E01881400BEA72E /* stations-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "stations-2.json"; sourceTree = "<group>"; };
 		5643D72DD6DE2DB8DF930377 /* Pods-ByvMapList_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ByvMapList_Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ByvMapList_Example/Pods-ByvMapList_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		5C00FBF2C26C4FF43142E95D /* Pods-ByvMapList_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ByvMapList_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ByvMapList_Tests/Pods-ByvMapList_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* ByvMapList_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ByvMapList_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -136,6 +138,7 @@
 				3AC9F4131E005C9100BEA72E /* DetailViewController.swift */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				3AC9F3FE1DFEF53A00BEA72E /* stations.json */,
+				3AC9F4151E01881400BEA72E /* stations-2.json */,
 				3AC9F4001DFEF6AB00BEA72E /* StationCell.xib */,
 				3AC9F4021DFEF81100BEA72E /* StationCell.swift */,
 				3AC9F40C1DFF057400BEA72E /* models */,
@@ -285,6 +288,7 @@
 				3AC9F4011DFEF6AB00BEA72E /* StationCell.xib in Resources */,
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
+				3AC9F4161E01881400BEA72E /* stations-2.json in Resources */,
 				3AC9F3FF1DFEF53A00BEA72E /* stations.json in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);

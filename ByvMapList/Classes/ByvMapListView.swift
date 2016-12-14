@@ -27,16 +27,13 @@ public protocol ByvMapListDelegate {
     func cellNibName() -> String;
     func pinImage(_ item:MKAnnotation, selected:Bool) -> ByvPinImage
     func itemSelected(_ item:MKAnnotation)
+    func didScrollToEnd()
+    
 }
 
 public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    let minListTop: CGFloat = 44.0
-    
-    //Change to real Cell
-    var cellHeight: CGFloat = 120.0
-    
-    //Map
+    // Map
     public var mapView: MKMapView = MKMapView()
     public var selectedScale:CGFloat = 2.0
     public var listMapAlpha:CGFloat = 0.8
@@ -44,22 +41,41 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     private var timer:Timer? = nil
     private var fromList = false
     
+    // Collection
     public var collectionView:UICollectionView? = nil
     public var delegate:ByvMapListDelegate? = nil
+    public var minListTop: CGFloat = 70.0
+    public var listColor: UIColor = UIColor.white
+    public var listTopCornerRadius: CGFloat = 8.0
     
-    let cellIdentifier:String = "mapListCell"
+    private var cellHeight: CGFloat = 120.0
+    private let cellIdentifier:String = "mapListCell"
     private var items:Array<Any> = []
     private var listView: UIView = UIView()
     private var headerView: UIView = UIView()
     private var listState:ByvListState = .header
-    //public var collection:UICollectionView = UICollectionView()
+    private var isScrollToEndAlerted:Bool = false
     
     public func reSetItems(_ newItems: Array<Any>) {
+        isScrollToEndAlerted = false
         items = newItems
         collectionView?.reloadData()
         collectionView?.scrollToItem(at: IndexPath.init(row: 0, section: 0), at: .top, animated: true)
         mapView.removeAnnotations(mapView.annotations)
         mapView.addAnnotations(items as! [MKAnnotation])
+        mapView.showAnnotations(mapView.annotations, animated: true)
+    }
+    
+    public func addMoreItems(_ newItems: Array<Any>) {
+        isScrollToEndAlerted = false
+        let preCount = items.count
+        items.append(contentsOf: newItems)
+        var rows:Array<IndexPath> = []
+        for row in preCount...items.count - 1 {
+            rows.append(IndexPath(row: row, section: 0))
+        }
+        collectionView?.insertItems(at: rows)
+        mapView.addAnnotations(newItems as! [MKAnnotation])
         mapView.showAnnotations(mapView.annotations, animated: true)
     }
     
@@ -79,13 +95,8 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         
         separator.addTo(listView, position: .top, insets: UIEdgeInsetsMake(6, 0, 0, 0), centered: true, width: 40.0, height: 6.0)
         
-        var label = UILabel()
-        label.text = "Prueba de Texto"
-        
-        label.addTo(headerView, position: .all, centered: true)
-        
-        headerView.backgroundColor = UIColor.lightGray
-        headerView.setHeight(50)
+        headerView.backgroundColor = listColor
+        headerView.setHeight(25)
         
         cellHeight = delegate.cellHeight()
         var flowLayout = ByvFlowLayout()
@@ -95,7 +106,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         let collView = UICollectionView(frame: CGRect.zero, collectionViewLayout: flowLayout)
         collView.delegate = self
         collView.dataSource = self
-        collView.backgroundColor = UIColor.orange
+        collView.backgroundColor = listColor
         collView.isPagingEnabled = false
         
         collView.register(UINib.init(nibName: delegate.cellNibName(), bundle: nil), forCellWithReuseIdentifier: cellIdentifier)
@@ -104,8 +115,8 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         collectionView!.delegate = self
         
         listView.addTo(self, position: .bottom, height: self.headerHeight())
-        listView.backgroundColor = UIColor.white
-        listView.layer.cornerRadius = 20.0
+        listView.backgroundColor = listColor
+        listView.layer.cornerRadius = listTopCornerRadius
         listView.addShadow(opacity: 0.5, radius: 5.0)
         
         listView.add(subViews: [headerView, collView], insets: UIEdgeInsetsMake(20, 0, 0, 0))
@@ -319,6 +330,24 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView.contentOffset.y < 0 {
             listView.height()?.constant += scrollView.contentOffset.y
+        }
+        
+        if listState == .list {
+            //Check vertically
+            if scrollView.contentOffset.y >= scrollView.contentSize.height - scrollView.bounds.size.height - cellHeight && !isScrollToEndAlerted {
+                isScrollToEndAlerted = true
+                if delegate != nil {
+                    delegate?.didScrollToEnd()
+                }
+            }
+        } else if listState == .single {
+            //Check horizontally
+            if scrollView.contentOffset.x >= scrollView.contentSize.width - scrollView.bounds.size.width && !isScrollToEndAlerted {
+                isScrollToEndAlerted = true
+                if delegate != nil {
+                    delegate?.didScrollToEnd()
+                }
+            }
         }
     }
     

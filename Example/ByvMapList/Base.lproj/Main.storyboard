@@ -22,7 +22,13 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
-                    <navigationItem key="navigationItem" id="xHZ-Yp-aql"/>
+                    <navigationItem key="navigationItem" id="xHZ-Yp-aql">
+                        <barButtonItem key="rightBarButtonItem" systemItem="refresh" id="4bL-fR-QuU">
+                            <connections>
+                                <action selector="refresh:" destination="vXZ-lx-hvc" id="667-U9-swP"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="byvMapListView" destination="kh9-bI-dsS" id="KFO-PY-vA3"/>
                     </connections>
