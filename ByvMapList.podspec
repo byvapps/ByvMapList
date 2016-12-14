@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
     s.name             = 'ByvMapList'
-    s.version          = '0.1.0'
+    s.version          = '1.0.0'
     s.summary          = 'Utils for B&V Apps.'
 
     # This description is used to generate tags and improve search results.
@@ -31,10 +31,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = '8.0'
 
     s.source_files = 'ByvMapList/Classes/**/*'
-
-    # s.resource_bundles = {
-    #   'ByvMapList' => ['ByvMapList/Assets/*.png']
-    # }
 
     # s.public_header_files = 'Pod/Classes/**/*.h'
     s.frameworks = 'UIKit', 'MapKit'
