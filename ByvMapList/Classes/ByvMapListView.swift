@@ -39,6 +39,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     //Map
     public var mapView: MKMapView = MKMapView()
     public var selectedScale:CGFloat = 2.0
+    public var listMapAlpha:CGFloat = 0.8
     private var selectedItem:MKAnnotation? = nil
     private var timer:Timer? = nil
     private var fromList = false
@@ -64,6 +65,8 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     
     public func load(_ delegate:ByvMapListDelegate) {
         self.delegate = delegate
+        
+        self.backgroundColor = UIColor.black
         
         //Map
         mapView.addTo(self)
@@ -103,7 +106,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         listView.addTo(self, position: .bottom, height: self.headerHeight())
         listView.backgroundColor = UIColor.white
         listView.layer.cornerRadius = 20.0
-        listView.addShadow()
+        listView.addShadow(opacity: 0.5, radius: 5.0)
         
         listView.add(subViews: [headerView, collView], insets: UIEdgeInsetsMake(20, 0, 0, 0))
         
@@ -152,25 +155,39 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
                     } else {
                         self.listView.frame = frame
                     }
-                }, completion: { (finished) in
-                    self.collectionView?.collectionViewLayout.invalidateLayout()
-                    if self.listState == .single && self.selectedItem != nil {
-                        Timer.scheduledTimer(timeInterval: 0.1, target:self, selector: #selector(self.scrollToSelected), userInfo: nil, repeats: false)
-                        if self.fromList {
-                            self.fromList = false
-                            if self.delegate != nil {
-                                self.delegate?.itemSelected(self.selectedItem!)
-                            }
-                        }
-                    } else if self.listState == .header {
-                        self.collectionView?.collectionViewLayout.invalidateLayout()
-                        self.collectionView?.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
+                    if self.listState == .list {
+                        self.mapView.alpha = self.listMapAlpha
+                    } else {
+                        self.mapView.alpha = 1.0
                     }
+                }, completion: { (finished) in
+                    self.stateChanged()
                 })
             }
         } else {
             self.listView.height()?.constant = height
+            if listState == .list {
+                mapView.alpha = listMapAlpha
+            } else {
+                mapView.alpha = 1.0
+            }
+            stateChanged()
+        }
+    }
+    
+    func stateChanged() {
+        collectionView?.collectionViewLayout.invalidateLayout()
+        if self.listState == .single && selectedItem != nil {
+            Timer.scheduledTimer(timeInterval: 0.1, target:self, selector: #selector(self.scrollToSelected), userInfo: nil, repeats: false)
+            if fromList {
+                fromList = false
+                if delegate != nil {
+                    delegate?.itemSelected(selectedItem!)
+                }
+            }
+        } else if listState == .header {
             collectionView?.collectionViewLayout.invalidateLayout()
+            collectionView?.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
         }
     }
     
@@ -191,8 +208,15 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         
         if sender.state == .changed {
             let height = getListHeight(sender.location(in: self))
-            
             listView.height()?.constant = height
+            var alpha:CGFloat = 1.0
+            let heightDiff = height - self.headerHeight() - cellHeight
+            let max = self.bounds.size.height - minListTop - self.headerHeight() - cellHeight
+            alpha = 1.0 - ((heightDiff / max) * (1.0 - listMapAlpha))
+            if alpha > 1.0 {
+                alpha = 1.0
+            }
+            mapView.alpha = alpha
         }
         
         if sender.state == .ended {
