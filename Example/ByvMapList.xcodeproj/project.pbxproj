@@ -8,6 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		29D90A88513B2D40FB6F203E /* Pods_ByvMapList_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 088C1DA5B4CF5B4BC093C5DE /* Pods_ByvMapList_Tests.framework */; };
+		3AC9F3FF1DFEF53A00BEA72E /* stations.json in Resources */ = {isa = PBXBuildFile; fileRef = 3AC9F3FE1DFEF53A00BEA72E /* stations.json */; };
+		3AC9F4011DFEF6AB00BEA72E /* StationCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AC9F4001DFEF6AB00BEA72E /* StationCell.xib */; };
+		3AC9F4031DFEF81100BEA72E /* StationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4021DFEF81100BEA72E /* StationCell.swift */; };
+		3AC9F4081DFF034E00BEA72E /* GasStation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4041DFF034E00BEA72E /* GasStation.swift */; };
+		3AC9F4091DFF034E00BEA72E /* GeoCountry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4051DFF034E00BEA72E /* GeoCountry.swift */; };
+		3AC9F40A1DFF034E00BEA72E /* GeoRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4061DFF034E00BEA72E /* GeoRegion.swift */; };
+		3AC9F40B1DFF034E00BEA72E /* StationRotule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4071DFF034E00BEA72E /* StationRotule.swift */; };
+		3AC9F4141E005C9100BEA72E /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4131E005C9100BEA72E /* DetailViewController.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -30,6 +38,14 @@
 /* Begin PBXFileReference section */
 		088C1DA5B4CF5B4BC093C5DE /* Pods_ByvMapList_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ByvMapList_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		22D8E2B75838982E21F59D2E /* ByvMapList.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = ByvMapList.podspec; path = ../ByvMapList.podspec; sourceTree = "<group>"; };
+		3AC9F3FE1DFEF53A00BEA72E /* stations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = stations.json; sourceTree = "<group>"; };
+		3AC9F4001DFEF6AB00BEA72E /* StationCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = StationCell.xib; sourceTree = "<group>"; };
+		3AC9F4021DFEF81100BEA72E /* StationCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StationCell.swift; sourceTree = "<group>"; };
+		3AC9F4041DFF034E00BEA72E /* GasStation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GasStation.swift; sourceTree = "<group>"; };
+		3AC9F4051DFF034E00BEA72E /* GeoCountry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeoCountry.swift; sourceTree = "<group>"; };
+		3AC9F4061DFF034E00BEA72E /* GeoRegion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeoRegion.swift; sourceTree = "<group>"; };
+		3AC9F4071DFF034E00BEA72E /* StationRotule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StationRotule.swift; sourceTree = "<group>"; };
+		3AC9F4131E005C9100BEA72E /* DetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 		5643D72DD6DE2DB8DF930377 /* Pods-ByvMapList_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ByvMapList_Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ByvMapList_Example/Pods-ByvMapList_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		5C00FBF2C26C4FF43142E95D /* Pods-ByvMapList_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ByvMapList_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ByvMapList_Tests/Pods-ByvMapList_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* ByvMapList_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ByvMapList_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -69,6 +85,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3AC9F40C1DFF057400BEA72E /* models */ = {
+			isa = PBXGroup;
+			children = (
+				3AC9F4041DFF034E00BEA72E /* GasStation.swift */,
+				3AC9F4051DFF034E00BEA72E /* GeoCountry.swift */,
+				3AC9F4061DFF034E00BEA72E /* GeoRegion.swift */,
+				3AC9F4071DFF034E00BEA72E /* StationRotule.swift */,
+			);
+			name = models;
+			sourceTree = "<group>";
+		};
 		5219441DA2ABB5A444A519D3 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -106,7 +133,12 @@
 			children = (
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				607FACD71AFB9204008FA782 /* ViewController.swift */,
+				3AC9F4131E005C9100BEA72E /* DetailViewController.swift */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
+				3AC9F3FE1DFEF53A00BEA72E /* stations.json */,
+				3AC9F4001DFEF6AB00BEA72E /* StationCell.xib */,
+				3AC9F4021DFEF81100BEA72E /* StationCell.swift */,
+				3AC9F40C1DFF057400BEA72E /* models */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
@@ -250,8 +282,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3AC9F4011DFEF6AB00BEA72E /* StationCell.xib in Resources */,
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
+				3AC9F3FF1DFEF53A00BEA72E /* stations.json in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -363,8 +397,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3AC9F4091DFF034E00BEA72E /* GeoCountry.swift in Sources */,
+				3AC9F4081DFF034E00BEA72E /* GasStation.swift in Sources */,
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
+				3AC9F40B1DFF034E00BEA72E /* StationRotule.swift in Sources */,
+				3AC9F40A1DFF034E00BEA72E /* GeoRegion.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
+				3AC9F4031DFEF81100BEA72E /* StationCell.swift in Sources */,
+				3AC9F4141E005C9100BEA72E /* DetailViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

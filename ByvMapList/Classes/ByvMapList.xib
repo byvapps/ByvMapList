@@ -4,6 +4,7 @@
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11524"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -42,7 +43,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="NO8-x5-7zx" firstAttribute="top" secondItem="FGH-Pb-f7s" secondAttribute="top" constant="6" id="9mB-0W-fVR"/>
-                            <constraint firstAttribute="height" constant="100" id="OEK-jt-RXg"/>
+                            <constraint firstAttribute="height" priority="999" constant="100" id="OEK-jt-RXg"/>
                             <constraint firstItem="NO8-x5-7zx" firstAttribute="centerX" secondItem="FGH-Pb-f7s" secondAttribute="centerX" id="iXF-OM-cgy"/>
                         </constraints>
                     </view>
