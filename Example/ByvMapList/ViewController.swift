@@ -18,15 +18,18 @@ class ViewController: UIViewController, ByvMapListDelegate {
     var secondPageLoaded:Bool = false
     var headerView = ListHeader.instanceFromNib()
     
+    let pin:UIImage = UIImage(named: "pin")!
+    let selectedPin:UIImage = UIImage(named: "pin_selected")!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        byvMapListView.minListTop = 44.0
         byvMapListView.load(self)
-        byvMapListView.collectionView?.backgroundColor = UIColor(white: 0.9, alpha: 1.0)
+        byvMapListView.listColor = UIColor.black
         
         let button = headerView.viewWithTag(10) as! UIButton
         button.addTarget(self, action: #selector(showSortList), for: .touchUpInside)
         byvMapListView.addHeaderView(headerView)
-        byvMapListView.minListTop = 44.0
         refresh(self)
     }
 
@@ -43,6 +46,11 @@ class ViewController: UIViewController, ByvMapListDelegate {
                 print(error.localizedDescription)
             }
         }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        byvMapListView.reloadCollectionViewLayout()
     }
     
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -82,14 +90,35 @@ class ViewController: UIViewController, ByvMapListDelegate {
         return "StationCell"
     }
     
-    func pinImage(_ item:MKAnnotation, selected:Bool) -> ByvPinImage {
-        var image = UIImage(named: "pin")!
-        if selected {
-            image = UIImage(named: "pin_selected")!
+    func pinView(mapView: MKMapView, annotation: MKAnnotation, selected: Bool) -> MKAnnotationView? {
+        let annotationIdentifier = "AnnotationIdentifier"
+        var annotationView: MKAnnotationView? = nil
+        if let dequeuedAnnotationView = mapView.dequeueReusableAnnotationView(withIdentifier: annotationIdentifier) {
+            annotationView = dequeuedAnnotationView
+            annotationView?.annotation = annotation
+        } else {
+            annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: annotationIdentifier)
         }
-        let y = -image.size.height / 2.0
-        let offset = CGPoint(x: 0, y: y)
-        return ByvPinImage(image, offset)
+        if let annotationView = annotationView {
+            if selected {
+                annotationView.image = selectedPin
+            } else {
+                annotationView.image = pin
+            }
+            let y = -annotationView.image!.size.height / 2.0
+            let offset = CGPoint(x: 0, y: y)
+            annotationView.centerOffset = offset
+        }
+        
+        return annotationView
+    }
+    
+    func selectPinView(annotationView: MKAnnotationView) {
+        annotationView.image = selectedPin
+    }
+    
+    func deSelectPinView(annotationView: MKAnnotationView) {
+        annotationView.image = pin
     }
     
     func itemSelected(_ item:MKAnnotation) {

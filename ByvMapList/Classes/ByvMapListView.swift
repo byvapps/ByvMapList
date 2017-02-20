@@ -10,8 +10,6 @@ import UIKit
 import MapKit
 import ByvUtils
 
-public typealias ByvPinImage = (UIImage, CGPoint)
-
 enum ByvListState {
     case header
     case single
@@ -25,10 +23,11 @@ public protocol ByvMapListCollectionViewCell {
 public protocol ByvMapListDelegate {
     func cellHeight() -> CGFloat;
     func cellNibName() -> String;
-    func pinImage(_ item:MKAnnotation, selected:Bool) -> ByvPinImage
     func itemSelected(_ item:MKAnnotation)
     func didScrollToEnd()
-    
+    func pinView(mapView: MKMapView, annotation:MKAnnotation, selected:Bool) -> MKAnnotationView?
+    func selectPinView(annotationView: MKAnnotationView)
+    func deSelectPinView(annotationView: MKAnnotationView)
 }
 
 public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
@@ -45,8 +44,30 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     public var collectionView:UICollectionView? = nil
     public var delegate:ByvMapListDelegate? = nil
     public var minListTop: CGFloat = 70.0
-    public var listColor: UIColor = UIColor.white
-    public var listTopCornerRadius: CGFloat = 8.0
+    private var _listColor: UIColor = UIColor.white
+    public var listColor: UIColor {
+        get {
+            return _listColor
+        }
+        set(newValue) {
+            _listColor = newValue
+            headerView.backgroundColor = _listColor
+            if let collView = collectionView {
+                collView.backgroundColor = _listColor
+            }
+            listView.backgroundColor = _listColor
+        }
+    }
+    private var _listTopCornerRadius: CGFloat = 8.0
+    public var listTopCornerRadius: CGFloat {
+        get {
+            return _listTopCornerRadius
+        }
+        set(newValue) {
+            _listTopCornerRadius = newValue
+            listView.layer.cornerRadius = listTopCornerRadius
+        }
+    }
     
     private var cellHeight: CGFloat = 120.0
     private let cellIdentifier:String = "mapListCell"
@@ -76,6 +97,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     public func reSetItems(_ newItems: Array<Any>) {
         isScrollToEndAlerted = false
         selectedItem = nil
+        changeToState(.header)
         items = newItems
         collectionView?.reloadData()
         collectionView?.scrollToItem(at: IndexPath.init(row: 0, section: 0), at: .top, animated: true)
@@ -149,6 +171,9 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         
         let pan = UIPanGestureRecognizer(target: self, action: #selector(panHandler(sender:)))
         listView.addGestureRecognizer(pan)
+        
+        
+        self.reloadCollectionViewLayout()
     }
     
     func changeToState(_ newState: ByvListState, animated:Bool = true) {
@@ -224,7 +249,9 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
             }
         } else if listState == .header {
             collectionView?.collectionViewLayout.invalidateLayout()
-            collectionView?.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
+            if items.count > 0 {
+                collectionView?.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
+            }
         }
     }
     
@@ -263,14 +290,18 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     }
     
     func indexOfSelectedItem() -> Int {
-        let index = items.index { (item) -> Bool in
-            return item as! NSObject === selectedItem as! NSObject
+        if selectedItem != nil {
+            let index = items.index { (item) -> Bool in
+                return item as! NSObject === selectedItem as! NSObject
+            }
+            var result = 0
+            if let index = index {
+                result = index
+            }
+            return result
+        } else  {
+            return 0
         }
-        var result = 0
-        if let index = index {
-            result = index
-        }
-        return result
     }
     
     func headerHeight() -> CGFloat {
@@ -385,16 +416,15 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     }
     
     public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        var offset:CGPoint = CGPoint(x: 0, y: 0)
+        delegate?.selectPinView(annotationView: view)
         mapView.setCenter(view.annotation!.coordinate, animated: true)
-        if let pinImage = delegate?.pinImage(view.annotation!, selected: true) {
-            view.image = pinImage.0
-            offset = pinImage.1
-        }
         if self.selectedScale != 1 {
             UIView.animate(withDuration: 0.3, animations: {
                 let transform:CGAffineTransform = CGAffineTransform.identity
                 view.transform = transform
+                var offset = view.centerOffset
+                offset.x *= self.selectedScale
+                offset.y *= self.selectedScale
                 view.centerOffset = offset
             })
         }
@@ -409,10 +439,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     }
     
     public func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
-        if let pinImage = delegate?.pinImage(view.annotation!, selected: false) {
-            view.image = pinImage.0
-            view.centerOffset = pinImage.1
-        }
+        delegate?.deSelectPinView(annotationView: view)
         UIView.animate(withDuration: 0.3, animations: {
             let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
             view.transform = transform
@@ -437,30 +464,25 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
             return nil
         }
         
-        // Better to make this class property
-        let annotationIdentifier = "AnnotationIdentifier"
-        
-        var annotationView: MKAnnotationView?
-        if let dequeuedAnnotationView = mapView.dequeueReusableAnnotationView(withIdentifier: annotationIdentifier) {
-            annotationView = dequeuedAnnotationView
-            annotationView?.annotation = annotation
-        }
-        else {
-            annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: annotationIdentifier)
+        var annotationView: MKAnnotationView? = delegate?.pinView(mapView: mapView, annotation: annotation, selected: (selectedItem != nil && selectedItem as! NSObject == annotation as! NSObject))
+        if annotationView == nil {
+            // Better to make this class property
+            let annotationIdentifier = "AnnotationIdentifier"
+            if let dequeuedAnnotationView = mapView.dequeueReusableAnnotationView(withIdentifier: annotationIdentifier) {
+                annotationView = dequeuedAnnotationView
+                annotationView?.annotation = annotation
+            } else {
+                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: annotationIdentifier)
+            }
         }
         
         if let annotationView = annotationView {
-            // Configure your annotation view here
-            annotationView.canShowCallout = false
-            if let pinImage = delegate?.pinImage(annotation, selected: (selectedItem != nil && selectedItem as! NSObject == annotation as! NSObject)) {
-                annotationView.image = pinImage.0
-                var offset = pinImage.1
-                offset.x /= self.selectedScale
-                offset.y /= self.selectedScale
-                annotationView.centerOffset = offset
-                let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
-                annotationView.transform = transform
-            }
+            var offset = annotationView.centerOffset
+            offset.x /= self.selectedScale
+            offset.y /= self.selectedScale
+            annotationView.centerOffset = offset
+            let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
+            annotationView.transform = transform
         }
         
         return annotationView
