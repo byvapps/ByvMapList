@@ -34,8 +34,10 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     
     // Map
     public var mapView: MKMapView = MKMapView()
+    public var overlay: UIView = UIView()
     public var selectedScale:CGFloat = 2.0
     public var listMapAlpha:CGFloat = 0.8
+    public var mapDelegate:MKMapViewDelegate? = nil
     private var selectedItem:MKAnnotation? = nil
     private var timer:Timer? = nil
     private var fromList = false
@@ -72,7 +74,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     private var cellHeight: CGFloat = 120.0
     private let cellIdentifier:String = "mapListCell"
     private var items:Array<Any> = []
-    private var listView: UIView = UIView()
+    public  var listView: UIView = UIView()
     private var headerView: UIView = UIView()
     private var listState:ByvListState = .header
     private var isScrollToEndAlerted:Bool = false
@@ -135,6 +137,12 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         //Map
         mapView.addTo(self)
         mapView.delegate = self
+        
+        //Overlay
+        overlay.frame = mapView.bounds
+        overlay.backgroundColor = .clear
+        overlay.addTo(mapView)
+        overlay.isUserInteractionEnabled = false
         
         //listView
         let separator = UIView()
