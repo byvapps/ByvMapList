@@ -37,7 +37,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     public var overlay: UIView = UIView()
     public var selectedScale:CGFloat = 2.0
     public var listMapAlpha:CGFloat = 0.8
-    public var mapDelegate:MKMapViewDelegate? = nil
+    private var mapDelegates:[MKMapViewDelegate] = []
     private var selectedItem:MKAnnotation? = nil
     private var timer:Timer? = nil
     private var fromList = false
@@ -78,6 +78,24 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     private var headerView: UIView = UIView()
     private var listState:ByvListState = .header
     private var isScrollToEndAlerted:Bool = false
+    
+    public func addMapDelegate(newDelegate:MKMapViewDelegate) {
+        for del in mapDelegates {
+            if newDelegate === del {
+                return
+            }
+        }
+        mapDelegates.append(newDelegate)
+    }
+    
+    public func removeMapDelegate(removeDelegate:MKMapViewDelegate) {
+        for i in 0...mapDelegates.count - 1 {
+            if removeDelegate === mapDelegates[i] {
+                mapDelegates.remove(at: i)
+                return
+            }
+        }
+    }
     
     public func allItems() -> Array<Any> {
         return items
@@ -525,5 +543,142 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         // Drawing code
     }
     */
+    
+    public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:regionWillChangeAnimated:))) {
+                del.mapView!(mapView, regionWillChangeAnimated: animated)
+                return
+            }
+        }
+    }
+    public func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:regionDidChangeAnimated:))) {
+                del.mapView!(mapView, regionDidChangeAnimated: animated)
+                return
+            }
+        }
+    }
+    public func mapViewWillStartLoadingMap(_ mapView: MKMapView) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapViewWillStartLoadingMap(_:))) {
+                del.mapViewWillStartLoadingMap!(mapView)
+                return
+            }
+        }
+    }
+    public func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapViewDidFinishLoadingMap(_:))) {
+                del.mapViewDidFinishLoadingMap!(mapView)
+                return
+            }
+        }
+    }
+    public func mapViewDidFailLoadingMap(_ mapView: MKMapView, withError error: Error) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapViewDidFailLoadingMap(_:withError:))) {
+                del.mapViewDidFailLoadingMap!(mapView, withError: error)
+                return
+            }
+        }
+    }
+    public func mapViewWillStartRenderingMap(_ mapView: MKMapView){
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapViewWillStartRenderingMap(_:))) {
+                del.mapViewWillStartRenderingMap!(mapView)
+                return
+            }
+        }
+    }
+    public func mapViewDidFinishRenderingMap(_ mapView: MKMapView, fullyRendered: Bool){
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapViewDidFinishRenderingMap(_:fullyRendered:))) {
+                del.mapViewDidFinishRenderingMap!(mapView, fullyRendered: fullyRendered)
+                return
+            }
+        }
+    }
+    public func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:didAdd:) as (MKMapView, [MKAnnotationView]) -> Void)) {
+                del.mapView!(mapView, didAdd: views)
+                return
+            }
+        }
+    }
+    public func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:annotationView:calloutAccessoryControlTapped:))) {
+                del.mapView!(mapView, annotationView: view, calloutAccessoryControlTapped: control)
+                return
+            }
+        }
+    }
+    public func mapViewWillStartLocatingUser(_ mapView: MKMapView) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapViewWillStartLocatingUser(_:))) {
+                del.mapViewWillStartLocatingUser!(mapView)
+                return
+            }
+        }
+    }
+    public func mapViewDidStopLocatingUser(_ mapView: MKMapView) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapViewDidStopLocatingUser(_:))) {
+                del.mapViewDidStopLocatingUser!(mapView)
+                return
+            }
+        }
+    }
+    public func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:didUpdate:))) {
+                del.mapView!(mapView, didUpdate: userLocation)
+                return
+            }
+        }
+    }
+    public func mapView(_ mapView: MKMapView, didFailToLocateUserWithError error: Error) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:didFailToLocateUserWithError:))) {
+                del.mapView!(mapView, didFailToLocateUserWithError: error)
+                return
+            }
+        }
+    }
+    public func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, didChange newState: MKAnnotationViewDragState, fromOldState oldState: MKAnnotationViewDragState) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:annotationView:didChange:fromOldState:))) {
+                del.mapView!(mapView, annotationView: view, didChange: newState, fromOldState: oldState)
+                return
+            }
+        }
+    }
+    public func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:didChange:animated:))) {
+                del.mapView!(mapView, didChange: mode, animated: animated)
+                return
+            }
+        }
+    }
+    public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:rendererFor:))) {
+                return del.mapView!(mapView, rendererFor:overlay)
+            }
+        }
+        
+        return MKOverlayRenderer(overlay: overlay)
+    }
+    public func mapView(_ mapView: MKMapView, didAdd renderers: [MKOverlayRenderer]){
+        for del in mapDelegates {
+            if del.responds(to: #selector(mapView(_:didAdd:) as (MKMapView, [MKOverlayRenderer]) -> Void)) {
+                del.mapView!(mapView, didAdd: renderers)
+            }
+        }
+    }
 
 }

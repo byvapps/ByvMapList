@@ -11,7 +11,7 @@ import MapKit
 import ByvMapList
 import SwiftyJSON
 
-class ViewController: UIViewController, ByvMapListDelegate {
+class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
 
     @IBOutlet var byvMapListView: ByvMapListView!
     
@@ -40,6 +40,12 @@ class ViewController: UIViewController, ByvMapListDelegate {
         btn.addTo(byvMapListView, position: .top, insets: UIEdgeInsetsMake(100, 0, 0, 0))
         
         byvMapListView.bringSubview(toFront: byvMapListView.listView)
+        
+        byvMapListView.addMapDelegate(newDelegate: self)
+    }
+    
+    public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
+        print("mapView regionWillChangeAnimated!!!")
     }
     
     func pressed() {
