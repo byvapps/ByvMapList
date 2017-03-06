@@ -120,7 +120,9 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         changeToState(.header)
         items = newItems
         collectionView?.reloadData()
-        collectionView?.scrollToItem(at: IndexPath.init(row: 0, section: 0), at: .top, animated: true)
+        if items.count > 0 {
+            collectionView?.scrollToItem(at: IndexPath.init(row: 0, section: 0), at: .top, animated: true)
+        }
         mapView.removeAnnotations(mapView.annotations)
         mapView.addAnnotations(items as! [MKAnnotation])
         mapView.showAnnotations(mapView.annotations, animated: true)
@@ -292,7 +294,9 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
                 flowLayout.direction = .vertical
                 collectionView?.isPagingEnabled = false
                 collectionView?.collectionViewLayout.invalidateLayout()
-                collectionView?.scrollToItem(at: IndexPath(row: indexOfSelectedItem(), section: 0), at: .top, animated: false)
+                if items.count > 0 {
+                    collectionView?.scrollToItem(at: IndexPath(row: indexOfSelectedItem(), section: 0), at: .top, animated: false)
+                }
             }
         }
         
