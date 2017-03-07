@@ -31,17 +31,6 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
         button.addTarget(self, action: #selector(showSortList), for: .touchUpInside)
         byvMapListView.addHeaderView(headerView)
         refresh(self)
-        
-        let btn = UIButton(frame: CGRect(x: 0, y: 0, width: self.view.bounds.size.width, height: 100))
-        btn.setTitle("Overlay button", for: .normal)
-        btn.backgroundColor = UIColor(red: 1, green: 0, blue: 0, alpha: 0.4)
-        btn.addTarget(self, action: #selector(self.pressed), for: .touchUpInside)
-        
-        btn.addTo(byvMapListView, position: .top, insets: UIEdgeInsetsMake(100, 0, 0, 0))
-        
-        byvMapListView.bringSubview(toFront: byvMapListView.listView)
-        
-        byvMapListView.addMapDelegate(newDelegate: self)
     }
     
     public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {

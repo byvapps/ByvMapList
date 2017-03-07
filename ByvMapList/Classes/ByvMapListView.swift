@@ -34,7 +34,6 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     
     // Map
     public var mapView: MKMapView = MKMapView()
-    public var overlay: UIView = UIView()
     public var selectedScale:CGFloat = 2.0
     public var listMapAlpha:CGFloat = 0.8
     private var mapDelegates:[MKMapViewDelegate] = []
@@ -157,12 +156,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         //Map
         mapView.addTo(self)
         mapView.delegate = self
-        
-        //Overlay
-        overlay.frame = mapView.bounds
-        overlay.backgroundColor = .clear
-        overlay.addTo(mapView)
-        overlay.isUserInteractionEnabled = false
+        self.sendSubview(toBack: mapView)
         
         //listView
         let separator = UIView()
