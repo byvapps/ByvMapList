@@ -225,7 +225,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         case .list:
             height = self.bounds.size.height - minListTop
         }
-            
+        
         if animated {
             var frame = self.listView.frame
             let diff = height - frame.size.height
@@ -440,6 +440,9 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     }
     
     public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        guard !(view.annotation is MKUserLocation) else {
+            return
+        }
         delegate?.selectPinView(annotationView: view)
         mapView.setCenter(view.annotation!.coordinate, animated: true)
         if self.selectedScale != 1 {
@@ -463,6 +466,9 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     }
     
     public func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
+        guard !(view.annotation is MKUserLocation) else {
+            return
+        }
         delegate?.deSelectPinView(annotationView: view)
         UIView.animate(withDuration: 0.3, animations: {
             let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
@@ -527,20 +533,20 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     }
     
     // Show compass below top toolbar
-//    override var topLayoutGuide: UILayoutSupport {
-//        let navigationBarOffset = (navigationController != nil) ? CGRectGetMaxY(navigationController!.navigationBar.frame) : 0
-//        let itemOffset = topItemHeight ?? 0
-//        return MapLayoutGuide(insetLength: navigationBarOffset + itemOffset)
-//    }
+    //    override var topLayoutGuide: UILayoutSupport {
+    //        let navigationBarOffset = (navigationController != nil) ? CGRectGetMaxY(navigationController!.navigationBar.frame) : 0
+    //        let itemOffset = topItemHeight ?? 0
+    //        return MapLayoutGuide(insetLength: navigationBarOffset + itemOffset)
+    //    }
     
-
+    
     /*
-    // Only override draw() if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        // Drawing code
-    }
-    */
+     // Only override draw() if you perform custom drawing.
+     // An empty implementation adversely affects performance during animation.
+     override func draw(_ rect: CGRect) {
+     // Drawing code
+     }
+     */
     
     public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
         for del in mapDelegates {
@@ -678,5 +684,5 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
             }
         }
     }
-
+    
 }
