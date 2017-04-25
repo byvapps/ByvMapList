@@ -10,11 +10,13 @@ import UIKit
 import MapKit
 import ByvMapList
 import SwiftyJSON
+import CoreLocation
 
 class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
 
     @IBOutlet var byvMapListView: ByvMapListView!
     
+    let locationManager = CLLocationManager()
     var secondPageLoaded:Bool = false
     var headerView = ListHeader.instanceFromNib()
     
@@ -23,9 +25,21 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        locationManager.requestWhenInUseAuthorization()
+        
         byvMapListView.minListTop = 44.0
         byvMapListView.load(self)
         byvMapListView.listColor = UIColor.black
+        
+        byvMapListView.showUserLocation = true
+        
+//        byvMapListView.centerRegionAtPoint = true
+//        byvMapListView.regionCenterPoint = CLLocationCoordinate2D(latitude: 43.170556, longitude: -2.597556)
+//        byvMapListView.regionRadius = 5000
+        
+        byvMapListView.showUserInRegion = false
+//        byvMapListView.maxAnnotationsInRegion = 3
         
         let button = headerView.viewWithTag(10) as! UIButton
         button.addTarget(self, action: #selector(showSortList), for: .touchUpInside)
@@ -46,9 +60,12 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
         if let path = Bundle.main.path(forResource: "stations", ofType: "json") {
             do {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .alwaysMapped)
-                let items = JSON.init(data: data).arrayValue.map({ (json) -> GasStation in
+                var items = JSON.init(data: data).arrayValue.map({ (json) -> GasStation in
                     return GasStation.init(fromJson: json)
                 })
+                if let loc = locationManager.location {
+                    items = items.sorted { loc.distance(from: CLLocation(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude))  < loc.distance(from: CLLocation(latitude: $1.coordinate.latitude, longitude: $1.coordinate.longitude)) }
+                }
                 byvMapListView.reSetItems(items)
             } catch let error {
                 print(error.localizedDescription)
@@ -153,6 +170,10 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
                 }
             }
         }
+    }
+    
+    func listStateDidCahnge(_ newState: ByvListState) {
+        return
     }
     
     func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage {

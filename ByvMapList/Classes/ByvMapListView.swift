@@ -10,7 +10,34 @@ import UIKit
 import MapKit
 import ByvUtils
 
-enum ByvListState {
+class MyLayoutGuide: NSObject, UILayoutSupport {
+    var insetLength: CGFloat = 0
+    
+    init(insetLength: CGFloat) {
+        self.insetLength = insetLength
+    }
+    
+    var length: CGFloat {
+        return insetLength
+    }
+    
+    @available(iOS 9.0, *)
+    var bottomAnchor: NSLayoutYAxisAnchor {
+        return self.bottomAnchor
+    }
+    
+    @available(iOS 9.0, *)
+    var topAnchor: NSLayoutYAxisAnchor {
+        return self.topAnchor
+    }
+    
+    @available(iOS 9.0, *)
+    var heightAnchor: NSLayoutDimension {
+        return self.heightAnchor
+    }
+}
+
+public enum ByvListState {
     case header
     case single
     case list
@@ -28,6 +55,7 @@ public protocol ByvMapListDelegate {
     func pinView(mapView: MKMapView, annotation:MKAnnotation, selected:Bool) -> MKAnnotationView?
     func selectPinView(annotationView: MKAnnotationView)
     func deSelectPinView(annotationView: MKAnnotationView)
+    func listStateDidCahnge(_ newState: ByvListState)
 }
 
 public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
@@ -36,10 +64,29 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     public var mapView: MKMapView = MKMapView()
     public var selectedScale:CGFloat = 2.0
     public var listMapAlpha:CGFloat = 0.8
+    
+    public var centerRegionAtPoint:Bool = false
+    public var regionCenterPoint:CLLocationCoordinate2D? = nil
+    public var regionRadius:Double = 0.0
+    public var showUserInRegion:Bool = true
+    public var maxAnnotationsInRegion:Int = 0
+    
+    
+    public var showUserLocation:Bool {
+        get {
+            return mapView.showsUserLocation
+        }
+        set(newValue) {
+            mapView.showsUserLocation = newValue
+        }
+    }
+    
     private var mapDelegates:[MKMapViewDelegate] = []
     private var selectedItem:MKAnnotation? = nil
     private var timer:Timer? = nil
     private var fromList = false
+    
+    private var userLocatedFirstTime = false
     
     // Collection
     public var collectionView:UICollectionView? = nil
@@ -72,7 +119,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     
     private var cellHeight: CGFloat = 120.0
     private let cellIdentifier:String = "mapListCell"
-    private var items:Array<Any> = []
+    private var items:Array<MKAnnotation> = []
     public  var listView: UIView = UIView()
     private var headerView: UIView = UIView()
     private var listState:ByvListState = .header
@@ -96,7 +143,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         }
     }
     
-    public func allItems() -> Array<Any> {
+    public func allItems() -> Array<MKAnnotation> {
         return items
     }
     
@@ -104,30 +151,33 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         if let delegate = delegate {
             cellHeight = delegate.cellHeight()
         }
-        let flowLayout = collectionView?.collectionViewLayout as! ByvFlowLayout
-        flowLayout.height = cellHeight
-        flowLayout.width = self.bounds.size.width
-        collectionView?.collectionViewLayout.invalidateLayout()
+        if let flowLayout = collectionView?.collectionViewLayout as? ByvFlowLayout {
+            flowLayout.height = cellHeight
+            flowLayout.width = self.bounds.size.width
+            collectionView?.collectionViewLayout.invalidateLayout()
+        }
         if listState == .single {
             scrollToSelected()
         }
     }
     
-    public func reSetItems(_ newItems: Array<Any>) {
+    public func reSetItems(_ newItems: Array<MKAnnotation>) {
         isScrollToEndAlerted = false
         selectedItem = nil
-        changeToState(.header)
+        if self.listState == .single {
+            changeToState(.header)
+        }
         items = newItems
         collectionView?.reloadData()
         if items.count > 0 {
             collectionView?.scrollToItem(at: IndexPath.init(row: 0, section: 0), at: .top, animated: true)
         }
         mapView.removeAnnotations(mapView.annotations)
-        mapView.addAnnotations(items as! [MKAnnotation])
-        mapView.showAnnotations(mapView.annotations, animated: true)
+        mapView.addAnnotations(items)
+        updateRegion()
     }
     
-    public func addMoreItems(_ newItems: Array<Any>) {
+    public func addMoreItems(_ newItems: Array<MKAnnotation>) {
         isScrollToEndAlerted = false
         let preCount = items.count
         items.append(contentsOf: newItems)
@@ -136,8 +186,41 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
             rows.append(IndexPath(row: row, section: 0))
         }
         collectionView?.insertItems(at: rows)
-        mapView.addAnnotations(newItems as! [MKAnnotation])
-        mapView.showAnnotations(mapView.annotations, animated: true)
+        mapView.addAnnotations(newItems)
+        updateRegion()
+    }
+    
+    public func updateRegion(_ animated:Bool = true) {
+        
+        if centerRegionAtPoint {
+            var loc = regionCenterPoint
+            if loc == nil {
+                loc = mapView.userLocation.coordinate
+            }
+            if let loc = loc {
+                let region = MKCoordinateRegionMakeWithDistance(loc, regionRadius, regionRadius)
+                mapView.setRegion(region, animated: animated)
+                return
+            }
+        } else {
+            var itemsToShow:[MKAnnotation] = items
+            if maxAnnotationsInRegion > 0 {
+                itemsToShow = []
+                var to = maxAnnotationsInRegion
+                if items.count < maxAnnotationsInRegion {
+                    to = items.count
+                }
+                for i in 1...to {
+                    itemsToShow.append(items[i - 1])
+                }
+            }
+            if showUserInRegion {
+                if mapView.userLocation.coordinate.latitude != 0.0 && mapView.userLocation.coordinate.longitude != 0.0 {
+                    itemsToShow.append(mapView.userLocation)
+                }
+            }
+            mapView.showAnnotations(itemsToShow, animated: animated)
+        }
     }
     
     public func addHeaderView(_ newHeader: UIView) {
@@ -196,6 +279,14 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         
         
         self.reloadCollectionViewLayout()
+    }
+    
+    public func showFullList(animated: Bool = true) {
+        self.changeToState(.list, animated: animated)
+    }
+    
+    public func hideList(animated: Bool = true) {
+        self.changeToState(.header, animated: animated)
     }
     
     func changeToState(_ newState: ByvListState, animated:Bool = true) {
@@ -275,6 +366,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
                 collectionView?.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
             }
         }
+        delegate?.listStateDidCahnge(self.listState)
     }
     
     var startY:CGFloat = 0.0
@@ -398,7 +490,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         if listState == .single {
             let index = Int(scrollView.contentOffset.x / self.bounds.size.width)
-            let newItem = items[index] as! MKAnnotation
+            let newItem = items[index]
             if selectedItem == nil || selectedItem as! NSObject != newItem as! NSObject {
                 selectedItem = newItem
                 mapView.selectAnnotation(newItem, animated: true)
@@ -519,14 +611,12 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     }
     
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if let item = items[indexPath.row] as? MKAnnotation {
-            if listState == .list {
-                fromList = true
-                mapView.selectAnnotation(item, animated: true)
-            } else {
-                if delegate != nil {
-                    delegate?.itemSelected(item)
-                }
+        if listState == .list {
+            fromList = true
+            mapView.selectAnnotation(items[indexPath.row], animated: true)
+        } else {
+            if delegate != nil {
+                delegate?.itemSelected(items[indexPath.row])
             }
         }
         
@@ -637,6 +727,12 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         }
     }
     public func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+        if !userLocatedFirstTime {
+            userLocatedFirstTime = true
+            if (centerRegionAtPoint && regionCenterPoint == nil) || (!centerRegionAtPoint && showUserInRegion) {
+                updateRegion()
+            }
+        }
         for del in mapDelegates {
             if del.responds(to: #selector(mapView(_:didUpdate:))) {
                 del.mapView!(mapView, didUpdate: userLocation)
