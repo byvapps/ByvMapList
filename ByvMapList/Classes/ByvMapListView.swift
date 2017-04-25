@@ -71,7 +71,6 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     public var showUserInRegion:Bool = true
     public var maxAnnotationsInRegion:Int = 0
     
-    
     public var showUserLocation:Bool {
         get {
             return mapView.showsUserLocation
@@ -148,6 +147,8 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
     }
     
     public func reloadCollectionViewLayout() {
+        let height = (listView.height()?.constant)!
+        updateListWithHeight(height)
         if let delegate = delegate {
             cellHeight = delegate.cellHeight()
         }
@@ -276,7 +277,6 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         
         let pan = UIPanGestureRecognizer(target: self, action: #selector(panHandler(sender:)))
         listView.addGestureRecognizer(pan)
-        
         
         self.reloadCollectionViewLayout()
     }
