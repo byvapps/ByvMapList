@@ -495,6 +495,9 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
                 selectedItem = newItem
                 mapView.selectAnnotation(newItem, animated: true)
             }
+        } else {
+            let height = (listView.height()?.constant)!
+            updateListWithHeight(height)
         }
     }
     
