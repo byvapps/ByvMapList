@@ -55,10 +55,10 @@ public protocol ByvMapListDelegate {
     func pinView(mapView: MKMapView, annotation:MKAnnotation, selected:Bool) -> MKAnnotationView?
     func selectPinView(annotationView: MKAnnotationView)
     func deSelectPinView(annotationView: MKAnnotationView)
-    func listStateDidCahnge(_ newState: ByvListState)
+    func listStateDidChange(_ newState: ByvListState)
 }
 
-public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+public class ByvMapListView: UIView {
     
     // Map
     public var mapView: MKMapView = MKMapView()
@@ -80,18 +80,18 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         }
     }
     
-    private var mapDelegates:[MKMapViewDelegate] = []
-    private var selectedItem:MKAnnotation? = nil
-    private var timer:Timer? = nil
-    private var fromList = false
+    var mapDelegates:[MKMapViewDelegate] = []
+    var selectedItem:MKAnnotation? = nil
+    var timer:Timer? = nil
+    var fromList = false
     
-    private var userLocatedFirstTime = false
+    var userLocatedFirstTime = false
     
     // Collection
     public var collectionView:UICollectionView? = nil
     public var delegate:ByvMapListDelegate? = nil
     public var minListTop: CGFloat = 70.0
-    private var _listColor: UIColor = UIColor.white
+    var _listColor: UIColor = UIColor.white
     public var listColor: UIColor {
         get {
             return _listColor
@@ -105,7 +105,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
             listView.backgroundColor = _listColor
         }
     }
-    private var _listTopCornerRadius: CGFloat = 8.0
+    var _listTopCornerRadius: CGFloat = 8.0
     public var listTopCornerRadius: CGFloat {
         get {
             return _listTopCornerRadius
@@ -116,13 +116,13 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         }
     }
     
-    private var cellHeight: CGFloat = 120.0
-    private let cellIdentifier:String = "mapListCell"
-    private var items:Array<MKAnnotation> = []
+    var cellHeight: CGFloat = 120.0
+    let cellIdentifier:String = "mapListCell"
+    var items:Array<MKAnnotation> = []
     public  var listView: UIView = UIView()
-    private var headerView: UIView = UIView()
-    private var listState:ByvListState = .header
-    private var isScrollToEndAlerted:Bool = false
+    var headerView: UIView = UIView()
+    var listState:ByvListState = .header
+    var isScrollToEndAlerted:Bool = false
     
     public func addMapDelegate(newDelegate:MKMapViewDelegate) {
         for del in mapDelegates {
@@ -366,7 +366,7 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
                 collectionView?.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
             }
         }
-        delegate?.listStateDidCahnge(self.listState)
+        delegate?.listStateDidChange(self.listState)
     }
     
     var startY:CGFloat = 0.0
@@ -467,18 +467,6 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         }
     }
     
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return items.count
-    }
-    
-    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell : ByvMapListCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ByvMapListCollectionViewCell
-        
-        cell.updateWithObject(items[indexPath.row])
-        
-        return cell as! UICollectionViewCell
-    }
-    
     func scrollToSelected() {
         var rect = collectionView!.bounds
         rect.origin.x = UIScreen.main.bounds.size.width * CGFloat(indexOfSelectedItem())
@@ -534,85 +522,36 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
         }
     }
     
-    public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        guard !(view.annotation is MKUserLocation) else {
-            return
-        }
-        delegate?.selectPinView(annotationView: view)
-        mapView.setCenter(view.annotation!.coordinate, animated: true)
-        if self.selectedScale != 1 {
-            UIView.animate(withDuration: 0.3, animations: {
-                let transform:CGAffineTransform = CGAffineTransform.identity
-                view.transform = transform
-                var offset = view.centerOffset
-                offset.x *= self.selectedScale
-                offset.y *= self.selectedScale
-                view.centerOffset = offset
-            })
-        }
-        if selectedItem == nil || selectedItem as! NSObject != view.annotation as! NSObject {
-            selectedItem = view.annotation
-            if listState != .single {
-                changeToState(.single)
-            } else {
-                scrollToSelected()
-            }
-        }
+    // Show compass below top toolbar
+    //    override var topLayoutGuide: UILayoutSupport {
+    //        let navigationBarOffset = (navigationController != nil) ? CGRectGetMaxY(navigationController!.navigationBar.frame) : 0
+    //        let itemOffset = topItemHeight ?? 0
+    //        return MapLayoutGuide(insetLength: navigationBarOffset + itemOffset)
+    //    }
+    
+}
+
+
+// MARK: UICollectionViewDataSource
+
+extension ByvMapListView: UICollectionViewDataSource {
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return items.count
     }
     
-    public func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
-        guard !(view.annotation is MKUserLocation) else {
-            return
-        }
-        delegate?.deSelectPinView(annotationView: view)
-        UIView.animate(withDuration: 0.3, animations: {
-            let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
-            view.transform = transform
-            var offset = view.centerOffset
-            offset.x /= self.selectedScale
-            offset.y /= self.selectedScale
-            view.centerOffset = offset
-        })
-        selectedItem = nil
-        timer = Timer.scheduledTimer(timeInterval: 0.1, target:self, selector: #selector(deselectAnnotation(_:)), userInfo: nil, repeats: false)
-    }
-    
-    func deselectAnnotation(_ timer:Timer?) {
-        if listState == .single && selectedItem == nil {
-            changeToState(.header)
-        }
-    }
-    
-    public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        // Don't want to show a custom image if the annotation is the user's location.
-        guard !(annotation is MKUserLocation) else {
-            return nil
-        }
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell : ByvMapListCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ByvMapListCollectionViewCell
         
-        var annotationView: MKAnnotationView? = delegate?.pinView(mapView: mapView, annotation: annotation, selected: (selectedItem != nil && selectedItem as! NSObject == annotation as! NSObject))
-        if annotationView == nil {
-            // Better to make this class property
-            let annotationIdentifier = "AnnotationIdentifier"
-            if let dequeuedAnnotationView = mapView.dequeueReusableAnnotationView(withIdentifier: annotationIdentifier) {
-                annotationView = dequeuedAnnotationView
-                annotationView?.annotation = annotation
-            } else {
-                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: annotationIdentifier)
-            }
-        }
+        cell.updateWithObject(items[indexPath.row])
         
-        if let annotationView = annotationView {
-            var offset = annotationView.centerOffset
-            offset.x /= self.selectedScale
-            offset.y /= self.selectedScale
-            annotationView.centerOffset = offset
-            let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
-            annotationView.transform = transform
-        }
-        
-        return annotationView
+        return cell as! UICollectionViewCell
     }
-    
+}
+
+
+// MARK: UICollectionViewDelegate
+
+extension ByvMapListView: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if listState == .list {
             fromList = true
@@ -622,24 +561,15 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
                 delegate?.itemSelected(items[indexPath.row])
             }
         }
-        
     }
+}
+
+
+// MARK: MKMapViewDelegate
+
+extension ByvMapListView: MKMapViewDelegate {
     
-    // Show compass below top toolbar
-    //    override var topLayoutGuide: UILayoutSupport {
-    //        let navigationBarOffset = (navigationController != nil) ? CGRectGetMaxY(navigationController!.navigationBar.frame) : 0
-    //        let itemOffset = topItemHeight ?? 0
-    //        return MapLayoutGuide(insetLength: navigationBarOffset + itemOffset)
-    //    }
     
-    
-    /*
-     // Only override draw() if you perform custom drawing.
-     // An empty implementation adversely affects performance during animation.
-     override func draw(_ rect: CGRect) {
-     // Drawing code
-     }
-     */
     
     public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
         for del in mapDelegates {
@@ -783,5 +713,4 @@ public class ByvMapListView: UIView, MKMapViewDelegate, UICollectionViewDataSour
             }
         }
     }
-    
 }

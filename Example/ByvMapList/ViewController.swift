@@ -172,7 +172,7 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
         }
     }
     
-    func listStateDidCahnge(_ newState: ByvListState) {
+    func listStateDidChange(_ newState: ByvListState) {
         return
     }
     
