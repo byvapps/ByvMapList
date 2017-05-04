@@ -569,6 +569,85 @@ extension ByvMapListView: UICollectionViewDelegate {
 
 extension ByvMapListView: MKMapViewDelegate {
     
+    public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        // Don't want to show a custom image if the annotation is the user's location.
+        guard !(annotation is MKUserLocation) else {
+            return nil
+        }
+        
+        var annotationView: MKAnnotationView? = delegate?.pinView(mapView: mapView, annotation: annotation, selected: (selectedItem != nil && selectedItem as! NSObject == annotation as! NSObject))
+        if annotationView == nil {
+            // Better to make this class property
+            let annotationIdentifier = "AnnotationIdentifier"
+            if let dequeuedAnnotationView = mapView.dequeueReusableAnnotationView(withIdentifier: annotationIdentifier) {
+                annotationView = dequeuedAnnotationView
+                annotationView?.annotation = annotation
+            } else {
+                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: annotationIdentifier)
+            }
+        }
+        
+        if let annotationView = annotationView {
+            var offset = annotationView.centerOffset
+            offset.x /= self.selectedScale
+            offset.y /= self.selectedScale
+            annotationView.centerOffset = offset
+            let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
+            annotationView.transform = transform
+        }
+        
+        return annotationView
+    }
+    
+    public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        guard !(view.annotation is MKUserLocation) else {
+            return
+        }
+        delegate?.selectPinView(annotationView: view)
+        mapView.setCenter(view.annotation!.coordinate, animated: true)
+        if self.selectedScale != 1 {
+            UIView.animate(withDuration: 0.3, animations: {
+                let transform:CGAffineTransform = CGAffineTransform.identity
+                view.transform = transform
+                var offset = view.centerOffset
+                offset.x *= self.selectedScale
+                offset.y *= self.selectedScale
+                view.centerOffset = offset
+            })
+        }
+        if selectedItem == nil || selectedItem as! NSObject != view.annotation as! NSObject {
+            selectedItem = view.annotation
+            if listState != .single {
+                changeToState(.single)
+            } else {
+                scrollToSelected()
+            }
+        }
+    }
+    
+    
+    public func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
+        guard !(view.annotation is MKUserLocation) else {
+            return
+        }
+        delegate?.deSelectPinView(annotationView: view)
+        UIView.animate(withDuration: 0.3, animations: {
+            let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
+            view.transform = transform
+            var offset = view.centerOffset
+            offset.x /= self.selectedScale
+            offset.y /= self.selectedScale
+            view.centerOffset = offset
+        })
+        selectedItem = nil
+        timer = Timer.scheduledTimer(timeInterval: 0.1, target:self, selector: #selector(deselectAnnotation(_:)), userInfo: nil, repeats: false)
+    }
+    
+    func deselectAnnotation(_ timer:Timer?) {
+        if listState == .single && selectedItem == nil {
+            changeToState(.header)
+        }
+    }
     
     
     public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
