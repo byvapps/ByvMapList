@@ -44,7 +44,7 @@ public enum ByvListState {
 }
 
 public protocol ByvMapListCollectionViewCell {
-    func updateWithObject(_ obj:Any)
+    func updateWithObject(_ obj:Any, listState:ByvListState, at indexPath:IndexPath)
 }
 
 public protocol ByvMapListDelegate {
@@ -122,6 +122,7 @@ public class ByvMapListView: UIView {
     public  var listView: UIView = UIView()
     var headerView: UIView = UIView()
     var listState:ByvListState = .header
+    var prePanListState:ByvListState = .header
     var isScrollToEndAlerted:Bool = false
     
     public func addMapDelegate(newDelegate:MKMapViewDelegate) {
@@ -156,6 +157,9 @@ public class ByvMapListView: UIView {
             flowLayout.height = cellHeight
             flowLayout.width = self.bounds.size.width
             collectionView?.collectionViewLayout.invalidateLayout()
+            if let visibles = collectionView?.indexPathsForVisibleItems {
+                collectionView?.reloadItems(at:visibles)
+            }
         }
         if listState == .single {
             scrollToSelected()
@@ -291,7 +295,7 @@ public class ByvMapListView: UIView {
     
     func changeToState(_ newState: ByvListState, animated:Bool = true) {
         let flowLayout = collectionView?.collectionViewLayout as! ByvFlowLayout
-        if listState != newState {
+//        if listState != newState {
             if newState == .single {
                 flowLayout.direction = .horizontal
                 collectionView?.isPagingEnabled = true
@@ -299,10 +303,11 @@ public class ByvMapListView: UIView {
                 flowLayout.direction = .vertical
                 collectionView?.isPagingEnabled = false
             }
-        }
+//        }
         
         // Update Frame
         listState = newState
+        prePanListState = newState
         var height:CGFloat = 0.0
         switch listState {
         case .header:
@@ -352,6 +357,9 @@ public class ByvMapListView: UIView {
     
     func stateChanged() {
         collectionView?.collectionViewLayout.invalidateLayout()
+        if let visibles = collectionView?.indexPathsForVisibleItems {
+            collectionView?.reloadItems(at:visibles)
+        }
         if self.listState == .single && selectedItem != nil {
             Timer.scheduledTimer(timeInterval: 0.1, target:self, selector: #selector(self.scrollToSelected), userInfo: nil, repeats: false)
             if fromList {
@@ -362,11 +370,15 @@ public class ByvMapListView: UIView {
             }
         } else if listState == .header {
             collectionView?.collectionViewLayout.invalidateLayout()
+            if let visibles = collectionView?.indexPathsForVisibleItems {
+                collectionView?.reloadItems(at:visibles)
+            }
             if items.count > 0 {
                 collectionView?.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
             }
         }
         delegate?.listStateDidChange(self.listState)
+//        collectionView?.reloadData()
     }
     
     var startY:CGFloat = 0.0
@@ -375,11 +387,16 @@ public class ByvMapListView: UIView {
         
         if sender.state == .began {
             startY = sender.location(in: listView).y
+            prePanListState = listState
             if listState == .single {
+                listState = .list
                 let flowLayout = collectionView?.collectionViewLayout as! ByvFlowLayout
                 flowLayout.direction = .vertical
                 collectionView?.isPagingEnabled = false
                 collectionView?.collectionViewLayout.invalidateLayout()
+                if let visibles = collectionView?.indexPathsForVisibleItems {
+                    collectionView?.reloadItems(at:visibles)
+                }
                 if items.count > 0 {
                     collectionView?.scrollToItem(at: IndexPath(row: indexOfSelectedItem(), section: 0), at: .top, animated: false)
                 }
@@ -439,7 +456,7 @@ public class ByvMapListView: UIView {
     }
     
     public func updateListWithHeight(_ height:CGFloat) {
-        if self.listState == .list {
+        if self.prePanListState == .list {
             let max = self.bounds.size.height - minListTop
             if height < max - cellHeight * 1.5 {
                 if selectedItem != nil {
@@ -450,13 +467,13 @@ public class ByvMapListView: UIView {
             } else {
                 changeToState(.list)
             }
-        } else if self.listState == .header {
+        } else if self.prePanListState == .header {
             if height > cellHeight {
                 changeToState(.list)
             } else {
                 changeToState(.header)
             }
-        } else if self.listState == .single {
+        } else if self.prePanListState == .single {
             if height > cellHeight * 1.5 {
                 changeToState(.list)
             } else if height < cellHeight * 0.5 {
@@ -542,7 +559,7 @@ extension ByvMapListView: UICollectionViewDataSource {
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell : ByvMapListCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ByvMapListCollectionViewCell
         
-        cell.updateWithObject(items[indexPath.row])
+        cell.updateWithObject(items[indexPath.row], listState: listState, at: indexPath)
         
         return cell as! UICollectionViewCell
     }

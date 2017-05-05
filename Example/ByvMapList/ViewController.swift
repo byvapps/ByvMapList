@@ -30,7 +30,7 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
         
         byvMapListView.minListTop = 44.0
         byvMapListView.load(self)
-        byvMapListView.listColor = UIColor.black
+        byvMapListView.listColor = UIColor.white
         
         byvMapListView.showUserLocation = true
         
