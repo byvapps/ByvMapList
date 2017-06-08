@@ -148,7 +148,7 @@ public class ByvMapListView: UIView {
     }
     
     public func reloadCollectionViewLayout() {
-        let height = (listView.height()?.constant)!
+        let height = (listView.height()?.constant)! - headerHeight()
         updateListWithHeight(height)
         if let delegate = delegate {
             cellHeight = delegate.cellHeight()
@@ -501,7 +501,7 @@ public class ByvMapListView: UIView {
                 mapView.selectAnnotation(newItem, animated: true)
             }
         } else {
-            let height = (listView.height()?.constant)!
+            let height = (listView.height()?.constant)! - headerHeight()
             updateListWithHeight(height)
         }
     }
@@ -533,7 +533,7 @@ public class ByvMapListView: UIView {
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if listState != .single {
             if !decelerate {
-                let height = (listView.height()?.constant)!
+                let height = (listView.height()?.constant)! - headerHeight()
                 updateListWithHeight(height)
             }
         }
@@ -572,6 +572,7 @@ extension ByvMapListView: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if listState == .list {
             fromList = true
+            mapView.deselectAnnotation(nil, animated:false)
             mapView.selectAnnotation(items[indexPath.row], animated: true)
         } else {
             if delegate != nil {
