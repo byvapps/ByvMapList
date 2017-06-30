@@ -61,15 +61,38 @@ public protocol ByvMapListDelegate {
 public class ByvMapListView: UIView {
     
     // Map
-    public var mapView: MKMapView = MKMapView()
+    lazy public var mapView: MKMapView = {
+        let map = MKMapView()
+        map.clusterManager.algorithm = algorithm
+        return map
+    }()
     public var selectedScale:CGFloat = 2.0
     public var listMapAlpha:CGFloat = 0.8
     
+    public var updateRegionAutomatically:Bool = true
     public var centerRegionAtPoint:Bool = false
     public var regionCenterPoint:CLLocationCoordinate2D? = nil
     public var regionRadius:Double = 0.0
     public var showUserInRegion:Bool = true
     public var maxAnnotationsInRegion:Int = 0
+    
+    var _showClusters:Bool = false
+    public var showClusters:Bool {
+        get {
+            return _showClusters
+        }
+        set {
+            if _showClusters != newValue {
+                _showClusters = newValue
+                if _showClusters {
+                    //Add to manager
+                } else {
+                    //Remove from manager
+                }
+            }
+        }
+    }
+    let algorithm = CKNonHierarchicalDistanceBasedAlgorithm()
     
     public var showUserLocation:Bool {
         get {
@@ -196,35 +219,36 @@ public class ByvMapListView: UIView {
     }
     
     public func updateRegion(_ animated:Bool = true) {
-        
-        if centerRegionAtPoint {
-            var loc = regionCenterPoint
-            if loc == nil {
-                loc = mapView.userLocation.coordinate
-            }
-            if let loc = loc {
-                let region = MKCoordinateRegionMakeWithDistance(loc, regionRadius, regionRadius)
-                mapView.setRegion(region, animated: animated)
-                return
-            }
-        } else {
-            var itemsToShow:[MKAnnotation] = items
-            if maxAnnotationsInRegion > 0 {
-                itemsToShow = []
-                var to = maxAnnotationsInRegion
-                if items.count < maxAnnotationsInRegion {
-                    to = items.count
+        if (updateRegionAutomatically) {
+            if centerRegionAtPoint {
+                var loc = regionCenterPoint
+                if loc == nil {
+                    loc = mapView.userLocation.coordinate
                 }
-                for i in 1...to {
-                    itemsToShow.append(items[i - 1])
+                if let loc = loc {
+                    let region = MKCoordinateRegionMakeWithDistance(loc, regionRadius, regionRadius)
+                    mapView.setRegion(region, animated: animated)
+                    return
                 }
-            }
-            if showUserInRegion {
-                if mapView.userLocation.coordinate.latitude != 0.0 && mapView.userLocation.coordinate.longitude != 0.0 {
-                    itemsToShow.append(mapView.userLocation)
+            } else {
+                var itemsToShow:[MKAnnotation] = items
+                if maxAnnotationsInRegion > 0 {
+                    itemsToShow = []
+                    var to = maxAnnotationsInRegion
+                    if items.count < maxAnnotationsInRegion {
+                        to = items.count
+                    }
+                    for i in 1...to {
+                        itemsToShow.append(items[i - 1])
+                    }
                 }
+                if showUserInRegion {
+                    if mapView.userLocation.coordinate.latitude != 0.0 && mapView.userLocation.coordinate.longitude != 0.0 {
+                        itemsToShow.append(mapView.userLocation)
+                    }
+                }
+                mapView.showAnnotations(itemsToShow, animated: animated)
             }
-            mapView.showAnnotations(itemsToShow, animated: animated)
         }
     }
     
