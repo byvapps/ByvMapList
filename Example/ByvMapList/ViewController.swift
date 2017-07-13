@@ -201,5 +201,8 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
         
         return newImage!
     }
+    @IBAction func changeClustering(_ sender: UIBarButtonItem) {
+        byvMapListView.showClusters = !byvMapListView.showClusters
+    }
 }
 

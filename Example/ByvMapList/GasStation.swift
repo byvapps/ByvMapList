@@ -8,9 +8,12 @@
 import Foundation 
 import SwiftyJSON
 import MapKit
+import ClusterKit
 
 
-class GasStation : NSObject, NSCoding, MKAnnotation {
+class GasStation : NSObject, NSCoding, CKAnnotation {
+    
+    weak public var cluster: CKCluster?
 
 	var active : Bool!
 	var address : String!

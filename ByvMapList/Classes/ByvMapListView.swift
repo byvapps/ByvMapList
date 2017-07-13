@@ -9,6 +9,8 @@
 import UIKit
 import MapKit
 import ByvUtils
+import BvMapCluster
+import ClusterKit
 
 class MyLayoutGuide: NSObject, UILayoutSupport {
     var insetLength: CGFloat = 0
@@ -63,7 +65,11 @@ public class ByvMapListView: UIView {
     // Map
     lazy public var mapView: MKMapView = {
         let map = MKMapView()
+        let algorithm = CKNonHierarchicalDistanceBasedAlgorithm()
+        algorithm.cellSize = 400
         map.clusterManager.algorithm = algorithm
+        map.clusterManager.marginFactor = 1
+        map.clusterManager.maxZoomLevel = 16
         return map
     }()
     public var selectedScale:CGFloat = 2.0
@@ -76,7 +82,7 @@ public class ByvMapListView: UIView {
     public var showUserInRegion:Bool = true
     public var maxAnnotationsInRegion:Int = 0
     
-    var _showClusters:Bool = false
+    var _showClusters:Bool = true
     public var showClusters:Bool {
         get {
             return _showClusters
@@ -86,13 +92,22 @@ public class ByvMapListView: UIView {
                 _showClusters = newValue
                 if _showClusters {
                     //Add to manager
+                    let items = mapView.annotations.filter({ (annotation) -> Bool in
+                        return annotation.isKind(of: CKAnnotation.self)
+                    })
+                    mapView.clusterManager.annotations = items as! [CKAnnotation]
+                    mapView.removeAnnotations(mapView.annotations)
+                    mapView.clusterManager.updateClustersIfNeeded()
                 } else {
                     //Remove from manager
+                    mapView.addAnnotations(mapView.clusterManager.annotations)
+                    mapView.clusterManager.annotations = []
+                    mapView.clusterManager.updateClustersIfNeeded()
                 }
             }
         }
     }
-    let algorithm = CKNonHierarchicalDistanceBasedAlgorithm()
+    public var clusterColor: UIColor? = nil
     
     public var showUserLocation:Bool {
         get {
@@ -200,8 +215,13 @@ public class ByvMapListView: UIView {
         if items.count > 0 {
             collectionView?.scrollToItem(at: IndexPath.init(row: 0, section: 0), at: .top, animated: true)
         }
-        mapView.removeAnnotations(mapView.annotations)
-        mapView.addAnnotations(items)
+        if _showClusters {
+            mapView.clusterManager.removeAnnotations(mapView.clusterManager.annotations)
+            mapView.clusterManager.addAnnotations(newItems as! [CKAnnotation])
+        } else {
+            mapView.removeAnnotations(mapView.annotations)
+            mapView.addAnnotations(items)
+        }
         updateRegion()
     }
     
@@ -214,7 +234,11 @@ public class ByvMapListView: UIView {
             rows.append(IndexPath(row: row, section: 0))
         }
         collectionView?.insertItems(at: rows)
-        mapView.addAnnotations(newItems)
+        if _showClusters {
+            mapView.clusterManager.addAnnotations(newItems as! [CKAnnotation])
+        } else {
+            mapView.addAnnotations(newItems)
+        }
         updateRegion()
     }
     
@@ -617,6 +641,21 @@ extension ByvMapListView: MKMapViewDelegate {
             return nil
         }
         
+        if let cluster = annotation as? CKCluster, cluster.count > 1 {
+            let reuseId = "Cluster"
+            var clusterView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
+            if clusterView == nil {
+                if let clusterColor = clusterColor {
+                    clusterView = FBAnnotationClusterView(annotation: annotation, reuseIdentifier: reuseId, configuration: FBAnnotationClusterViewConfiguration.default(color: clusterColor))
+                } else {
+                    clusterView = FBAnnotationClusterView(annotation: annotation, reuseIdentifier: reuseId, configuration: FBAnnotationClusterViewConfiguration.default())
+                }
+            } else {
+                clusterView?.annotation = annotation
+            }
+            return clusterView
+        }
+        
         var annotationView: MKAnnotationView? = delegate?.pinView(mapView: mapView, annotation: annotation, selected: (selectedItem != nil && selectedItem as! NSObject == annotation as! NSObject))
         if annotationView == nil {
             // Better to make this class property
@@ -643,6 +682,10 @@ extension ByvMapListView: MKMapViewDelegate {
     
     public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         guard !(view.annotation is MKUserLocation) else {
+            return
+        }
+        if _showClusters, let cluster = view.annotation as? CKCluster, cluster.count > 1 {
+            mapView.showCluster(cluster, animated: true)
             return
         }
         delegate?.selectPinView(annotationView: view)
@@ -701,6 +744,9 @@ extension ByvMapListView: MKMapViewDelegate {
         }
     }
     public func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        if _showClusters {
+            mapView.clusterManager.updateClustersIfNeeded()
+        }
         for del in mapDelegates {
             if del.responds(to: #selector(mapView(_:regionDidChangeAnimated:))) {
                 del.mapView!(mapView, regionDidChangeAnimated: animated)
