@@ -92,15 +92,12 @@ public class ByvMapListView: UIView {
                 _showClusters = newValue
                 if _showClusters {
                     //Add to manager
-                    let items = mapView.annotations.filter({ (annotation) -> Bool in
-                        return annotation.isKind(of: CKAnnotation.self)
-                    })
-                    mapView.clusterManager.annotations = items as! [CKAnnotation]
                     mapView.removeAnnotations(mapView.annotations)
+                    mapView.clusterManager.annotations = items as! [CKAnnotation]
                     mapView.clusterManager.updateClustersIfNeeded()
                 } else {
                     //Remove from manager
-                    mapView.addAnnotations(mapView.clusterManager.annotations)
+                    mapView.addAnnotations(items)
                     mapView.clusterManager.annotations = []
                     mapView.clusterManager.updateClustersIfNeeded()
                 }
@@ -216,8 +213,7 @@ public class ByvMapListView: UIView {
             collectionView?.scrollToItem(at: IndexPath.init(row: 0, section: 0), at: .top, animated: true)
         }
         if _showClusters {
-            mapView.clusterManager.removeAnnotations(mapView.clusterManager.annotations)
-            mapView.clusterManager.addAnnotations(newItems as! [CKAnnotation])
+            mapView.clusterManager.annotations = newItems as! [CKAnnotation]
         } else {
             mapView.removeAnnotations(mapView.annotations)
             mapView.addAnnotations(items)
@@ -272,6 +268,9 @@ public class ByvMapListView: UIView {
                     }
                 }
                 mapView.showAnnotations(itemsToShow, animated: animated)
+                if _showClusters {
+                    mapView.removeAnnotations(itemsToShow)
+                }
             }
         }
     }
@@ -641,43 +640,46 @@ extension ByvMapListView: MKMapViewDelegate {
             return nil
         }
         
-        if let cluster = annotation as? CKCluster, cluster.count > 1 {
-            let reuseId = "Cluster"
-            var clusterView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
-            if clusterView == nil {
-                if let clusterColor = clusterColor {
-                    clusterView = FBAnnotationClusterView(annotation: annotation, reuseIdentifier: reuseId, configuration: FBAnnotationClusterViewConfiguration.default(color: clusterColor))
+        let reuseId = "Cluster"
+        if let cluster = annotation as? CKCluster {
+            if cluster.count > 1 {
+                var clusterView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
+                if clusterView == nil {
+                    if let clusterColor = clusterColor {
+                        clusterView = FBAnnotationClusterView(annotation: annotation, reuseIdentifier: reuseId, configuration: FBAnnotationClusterViewConfiguration.default(color: clusterColor))
+                    } else {
+                        clusterView = FBAnnotationClusterView(annotation: annotation, reuseIdentifier: reuseId, configuration: FBAnnotationClusterViewConfiguration.default())
+                    }
                 } else {
-                    clusterView = FBAnnotationClusterView(annotation: annotation, reuseIdentifier: reuseId, configuration: FBAnnotationClusterViewConfiguration.default())
+                    clusterView?.annotation = annotation
                 }
+                return clusterView
             } else {
-                clusterView?.annotation = annotation
+            
+                var annotationView: MKAnnotationView? = delegate?.pinView(mapView: mapView, annotation: annotation, selected: (selectedItem != nil && selectedItem as! NSObject == annotation as! NSObject))
+                if annotationView == nil {
+                    // Better to make this class property
+                    if let dequeuedAnnotationView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) {
+                        annotationView = dequeuedAnnotationView
+                        annotationView?.annotation = annotation
+                    } else {
+                        annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+                    }
+                }
+                
+                if let annotationView = annotationView {
+                    var offset = annotationView.centerOffset
+                    offset.x /= self.selectedScale
+                    offset.y /= self.selectedScale
+                    annotationView.centerOffset = offset
+                    let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
+                    annotationView.transform = transform
+                }
+                
+                return annotationView
             }
-            return clusterView
         }
-        
-        var annotationView: MKAnnotationView? = delegate?.pinView(mapView: mapView, annotation: annotation, selected: (selectedItem != nil && selectedItem as! NSObject == annotation as! NSObject))
-        if annotationView == nil {
-            // Better to make this class property
-            let annotationIdentifier = "AnnotationIdentifier"
-            if let dequeuedAnnotationView = mapView.dequeueReusableAnnotationView(withIdentifier: annotationIdentifier) {
-                annotationView = dequeuedAnnotationView
-                annotationView?.annotation = annotation
-            } else {
-                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: annotationIdentifier)
-            }
-        }
-        
-        if let annotationView = annotationView {
-            var offset = annotationView.centerOffset
-            offset.x /= self.selectedScale
-            offset.y /= self.selectedScale
-            annotationView.centerOffset = offset
-            let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
-            annotationView.transform = transform
-        }
-        
-        return annotationView
+        return nil
     }
     
     public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {

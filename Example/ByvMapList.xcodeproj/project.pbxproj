@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		29D90A88513B2D40FB6F203E /* Pods_ByvMapList_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 088C1DA5B4CF5B4BC093C5DE /* Pods_ByvMapList_Tests.framework */; };
+		3AAED3921F18B32800149F7F /* Enterprise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAED3901F18B32800149F7F /* Enterprise.swift */; };
+		3AAED3931F18B32800149F7F /* galdakao_ge.json in Resources */ = {isa = PBXBuildFile; fileRef = 3AAED3911F18B32800149F7F /* galdakao_ge.json */; };
+		3AAED3961F18B37D00149F7F /* EnterpriseCelll.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AAED3941F18B37D00149F7F /* EnterpriseCelll.xib */; };
+		3AAED3971F18B37D00149F7F /* EnterpriseCelll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAED3951F18B37D00149F7F /* EnterpriseCelll.swift */; };
 		3AC9F3FF1DFEF53A00BEA72E /* stations.json in Resources */ = {isa = PBXBuildFile; fileRef = 3AC9F3FE1DFEF53A00BEA72E /* stations.json */; };
 		3AC9F4011DFEF6AB00BEA72E /* StationCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AC9F4001DFEF6AB00BEA72E /* StationCell.xib */; };
 		3AC9F4031DFEF81100BEA72E /* StationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC9F4021DFEF81100BEA72E /* StationCell.swift */; };
@@ -41,6 +45,10 @@
 /* Begin PBXFileReference section */
 		088C1DA5B4CF5B4BC093C5DE /* Pods_ByvMapList_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ByvMapList_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		22D8E2B75838982E21F59D2E /* ByvMapList.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = ByvMapList.podspec; path = ../ByvMapList.podspec; sourceTree = "<group>"; };
+		3AAED3901F18B32800149F7F /* Enterprise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Enterprise.swift; sourceTree = "<group>"; };
+		3AAED3911F18B32800149F7F /* galdakao_ge.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = galdakao_ge.json; sourceTree = "<group>"; };
+		3AAED3941F18B37D00149F7F /* EnterpriseCelll.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EnterpriseCelll.xib; sourceTree = "<group>"; };
+		3AAED3951F18B37D00149F7F /* EnterpriseCelll.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnterpriseCelll.swift; sourceTree = "<group>"; };
 		3AC9F3FE1DFEF53A00BEA72E /* stations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = stations.json; sourceTree = "<group>"; };
 		3AC9F4001DFEF6AB00BEA72E /* StationCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = StationCell.xib; sourceTree = "<group>"; };
 		3AC9F4021DFEF81100BEA72E /* StationCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StationCell.swift; sourceTree = "<group>"; };
@@ -91,15 +99,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		3AC9F40C1DFF057400BEA72E /* models */ = {
+		3AC9F40C1DFF057400BEA72E /* Enterprise */ = {
 			isa = PBXGroup;
 			children = (
-				3AC9F4041DFF034E00BEA72E /* GasStation.swift */,
-				3AC9F4051DFF034E00BEA72E /* GeoCountry.swift */,
-				3AC9F4061DFF034E00BEA72E /* GeoRegion.swift */,
-				3AC9F4071DFF034E00BEA72E /* StationRotule.swift */,
+				3AAED3941F18B37D00149F7F /* EnterpriseCelll.xib */,
+				3AAED3951F18B37D00149F7F /* EnterpriseCelll.swift */,
+				3AAED3901F18B32800149F7F /* Enterprise.swift */,
+				3AAED3911F18B32800149F7F /* galdakao_ge.json */,
 			);
-			name = models;
+			name = Enterprise;
 			sourceTree = "<group>";
 		};
 		3AC9F41B1E019BF800BEA72E /* List Header */ = {
@@ -118,6 +126,10 @@
 				3AC9F4151E01881400BEA72E /* stations-2.json */,
 				3AC9F4001DFEF6AB00BEA72E /* StationCell.xib */,
 				3AC9F4021DFEF81100BEA72E /* StationCell.swift */,
+				3AC9F4041DFF034E00BEA72E /* GasStation.swift */,
+				3AC9F4051DFF034E00BEA72E /* GeoCountry.swift */,
+				3AC9F4061DFF034E00BEA72E /* GeoRegion.swift */,
+				3AC9F4071DFF034E00BEA72E /* StationRotule.swift */,
 			);
 			name = Stations;
 			sourceTree = "<group>";
@@ -163,7 +175,7 @@
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				3AC9F41C1E019C0400BEA72E /* Stations */,
 				3AC9F41B1E019BF800BEA72E /* List Header */,
-				3AC9F40C1DFF057400BEA72E /* models */,
+				3AC9F40C1DFF057400BEA72E /* Enterprise */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
@@ -309,11 +321,13 @@
 			files = (
 				3AC9F4011DFEF6AB00BEA72E /* StationCell.xib in Resources */,
 				3AC9F41A1E01933600BEA72E /* ListHeader.xib in Resources */,
+				3AAED3961F18B37D00149F7F /* EnterpriseCelll.xib in Resources */,
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
 				3AC9F4161E01881400BEA72E /* stations-2.json in Resources */,
 				3AC9F3FF1DFEF53A00BEA72E /* stations.json in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
+				3AAED3931F18B32800149F7F /* galdakao_ge.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -429,9 +443,11 @@
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				3AC9F40B1DFF034E00BEA72E /* StationRotule.swift in Sources */,
 				3AC9F40A1DFF034E00BEA72E /* GeoRegion.swift in Sources */,
+				3AAED3971F18B37D00149F7F /* EnterpriseCelll.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				3AC9F4031DFEF81100BEA72E /* StationCell.swift in Sources */,
 				3AC9F4181E01932900BEA72E /* ListHeader.swift in Sources */,
+				3AAED3921F18B32800149F7F /* Enterprise.swift in Sources */,
 				3AC9F4141E005C9100BEA72E /* DetailViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
