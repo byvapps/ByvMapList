@@ -47,6 +47,10 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
         refresh(self)
     }
     
+    override var bottomLayoutGuide: UILayoutSupport {
+        return byvMapListView.bottomLayoutGuide()
+    }
+    
     public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
         print("mapView regionWillChangeAnimated!!!")
     }

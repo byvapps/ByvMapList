@@ -115,11 +115,6 @@ public class ByvMapListView: UIView {
         set {
             if _showClusters != newValue {
                 _showClustersUser = newValue
-                //                if newValue {
-                //                    _centerInSelectedPoi = false
-                //                } else if !_explorationMode {
-                //                    _centerInSelectedPoi = _centerInSelectedPoiUser
-                //                }
                 _showClusters = newValue
                 reloadClusters()
             }
@@ -204,11 +199,15 @@ public class ByvMapListView: UIView {
     var cellHeight: CGFloat = 120.0
     let cellIdentifier:String = "mapListCell"
     var items:Array<MKAnnotation> = []
-    public  var listView: UIView = UIView()
+    public var listView: UIView = UIView()
     var headerView: UIView = UIView()
     var listState:ByvListState = .header
     var prePanListState:ByvListState = .header
     var isScrollToEndAlerted:Bool = false
+    
+    public func bottomLayoutGuide() -> UILayoutSupport {
+        return LayoutGuide(length: self.listView.bounds.size.height)
+    }
     
     public func addMapDelegate(newDelegate:MKMapViewDelegate) {
         for del in mapDelegates {
@@ -452,6 +451,8 @@ public class ByvMapListView: UIView {
     }
     
     func stateChanged() {
+        self.mapView.setNeedsLayout()
+        self.mapView.layoutIfNeeded()
         collectionView?.collectionViewLayout.invalidateLayout()
         if let visibles = collectionView?.indexPathsForVisibleItems {
             collectionView?.reloadItems(at:visibles)
