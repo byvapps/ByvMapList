@@ -32,21 +32,21 @@
 import UIKit
 
 
-final class LayoutGuide: NSObject, UILayoutSupport {
-    let length: CGFloat
+public final class LayoutGuide: NSObject, UILayoutSupport {
+    public let length: CGFloat
     
     @available(iOS 9.0, *)
-    var topAnchor: NSLayoutYAxisAnchor {
+    public var topAnchor: NSLayoutYAxisAnchor {
         return NSLayoutYAxisAnchor()
     }
     
     @available(iOS 9.0, *)
-    var bottomAnchor: NSLayoutYAxisAnchor {
+    public var bottomAnchor: NSLayoutYAxisAnchor {
         return NSLayoutYAxisAnchor()
     }
     
     @available(iOS 9.0, *)
-    var heightAnchor: NSLayoutDimension {
+    public var heightAnchor: NSLayoutDimension {
         return NSLayoutDimension()
     }
     
