@@ -61,7 +61,7 @@ public protocol ByvMapListDelegate {
 }
 
 public protocol ByvMapListDataSource {
-    func annotationsInRegion(region: MKCoordinateRegion) -> [MKAnnotation]
+    func annotationsInRegion(visibleMapRect: MKMapRect) -> [MKAnnotation]
 }
 
 public class ByvMapListView: UIView {
@@ -94,6 +94,7 @@ public class ByvMapListView: UIView {
         set {
             if _explorationMode != newValue {
                 _explorationMode = newValue
+                print("_explorationMode = \(_explorationMode)")
                 if _explorationMode {
                     centerInSelectedPoi = false
                 } else if _showClustersUser {
@@ -409,7 +410,11 @@ public class ByvMapListView: UIView {
         case .header:
             height = self.headerHeight()
             if selectedItem != nil {
-                mapView.clusterManager.deselectAnnotation(selectedItem as! CKAnnotation, animated: true)
+                if _showClusters {
+                    mapView.clusterManager.deselectAnnotation(selectedItem as! CKAnnotation, animated: true)
+                } else {
+                    mapView.deselectAnnotation(selectedItem, animated: true)
+                }
             }
         case .single:
             height = self.headerHeight() + self.cellHeight
@@ -595,8 +600,11 @@ public class ByvMapListView: UIView {
             let newItem = items[index]
             if selectedItem == nil || selectedItem as! NSObject != newItem as! NSObject {
                 selectedItem = newItem
-                
-                mapView.clusterManager.selectAnnotation(newItem as? CKAnnotation, animated: true)
+                if _showClusters {
+                    mapView.clusterManager.selectAnnotation(newItem as? CKAnnotation, animated: true)
+                } else {
+                    mapView.selectAnnotation(newItem, animated: true)
+                }
             }
         } else {
             let height = (listView.height()?.constant)! - headerHeight()
@@ -672,9 +680,17 @@ extension ByvMapListView: UICollectionViewDelegate {
             fromList = true
             let newItem = items[indexPath.row]
             if selectedItem != nil {
-                mapView.clusterManager.deselectAnnotation(selectedItem as! CKAnnotation, animated: true)
+                if _showClusters {
+                    mapView.clusterManager.deselectAnnotation(selectedItem as! CKAnnotation, animated: true)
+                } else {
+                    mapView.deselectAnnotation(selectedItem, animated: true)
+                }
             }
-            mapView.clusterManager.selectAnnotation(newItem as? CKAnnotation, animated: true)
+            if _showClusters {
+                mapView.clusterManager.selectAnnotation(newItem as? CKAnnotation, animated: true)
+            } else {
+                mapView.selectAnnotation(newItem, animated: true)
+            }
         } else {
             if delegate != nil {
                 delegate?.itemSelected(items[indexPath.row])
@@ -807,9 +823,16 @@ extension ByvMapListView: MKMapViewDelegate {
         }
     }
     public func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        if _explorationMode, let items = dataSource?.annotationsInRegion(region: mapView.region) {
-            mapView.removeAnnotations(mapView.annotations)
-            mapView.addAnnotations(items)
+        if _explorationMode, let items = dataSource?.annotationsInRegion(visibleMapRect: mapView.visibleMapRect) {
+            self.items = items
+            self.collectionView?.reloadData()
+            if _showClusters {
+                mapView.clusterManager.annotations = items as! [CKAnnotation]
+                mapView.clusterManager.updateClustersIfNeeded()
+            } else {
+                mapView.removeAnnotations(mapView.annotations)
+                mapView.addAnnotations(items)
+            }
         }
         if _showClusters {
             mapView.clusterManager.updateClustersIfNeeded()
