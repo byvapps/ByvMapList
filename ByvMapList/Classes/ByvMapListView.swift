@@ -308,8 +308,10 @@ public class ByvMapListView: UIView {
                     if items.count < maxAnnotationsInRegion {
                         to = items.count
                     }
-                    for i in 1...to {
-                        itemsToShow.append(items[i - 1])
+                    if to > 0 {
+                        for i in 1...to {
+                            itemsToShow.append(items[i - 1])
+                        }
                     }
                 }
                 if showUserInRegion {
@@ -411,7 +413,7 @@ public class ByvMapListView: UIView {
             height = self.headerHeight()
             if selectedItem != nil {
                 if _showClusters {
-                    mapView.clusterManager.deselectAnnotation(selectedItem as! CKAnnotation, animated: true)
+                    mapView.clusterManager.deselectAnnotation((selectedItem as! CKAnnotation), animated: true)
                 } else {
                     mapView.deselectAnnotation(selectedItem, animated: true)
                 }
@@ -601,7 +603,7 @@ public class ByvMapListView: UIView {
             if selectedItem == nil || selectedItem as! NSObject != newItem as! NSObject {
                 selectedItem = newItem
                 if _showClusters {
-                    mapView.clusterManager.selectAnnotation(newItem as? CKAnnotation, animated: true)
+                    mapView.clusterManager.selectAnnotation((newItem as! CKAnnotation), animated: true)
                 } else {
                     mapView.selectAnnotation(newItem, animated: true)
                 }
@@ -681,13 +683,13 @@ extension ByvMapListView: UICollectionViewDelegate {
             let newItem = items[indexPath.row]
             if selectedItem != nil {
                 if _showClusters {
-                    mapView.clusterManager.deselectAnnotation(selectedItem as! CKAnnotation, animated: true)
+                    mapView.clusterManager.deselectAnnotation((selectedItem as! CKAnnotation), animated: true)
                 } else {
                     mapView.deselectAnnotation(selectedItem, animated: true)
                 }
             }
             if _showClusters {
-                mapView.clusterManager.selectAnnotation(newItem as? CKAnnotation, animated: true)
+                mapView.clusterManager.selectAnnotation((newItem as! CKAnnotation), animated: true)
             } else {
                 mapView.selectAnnotation(newItem, animated: true)
             }
@@ -758,7 +760,7 @@ extension ByvMapListView: MKMapViewDelegate {
                 mapView.showCluster(cluster, animated: true)
                 return
             } else {
-                self.mapView.clusterManager.selectAnnotation(cluster.firstAnnotation, animated: false)
+                self.mapView.clusterManager.selectAnnotation(cluster.firstAnnotation!, animated: false)
             }
         }
         delegate?.selectPinView(annotationView: view)
