@@ -64,7 +64,8 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
         if let path = Bundle.main.path(forResource: "stations", ofType: "json") {
             do {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .alwaysMapped)
-                var items = JSON.init(data: data).arrayValue.map({ (json) -> GasStation in
+                let json = try JSON.init(data: data)
+                var items = json.arrayValue.map({ (json) -> GasStation in
                     return GasStation.init(fromJson: json)
                 })
                 if let loc = locationManager.location {
@@ -93,7 +94,7 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
         // Dispose of any resources that can be recreated.
     }
     
-    func showSortList() {
+    @objc func showSortList() {
         let actionSheet = UIAlertController(title: "Sort by", message: nil, preferredStyle: .actionSheet)
         actionSheet.addAction(UIAlertAction(title: "Name", style: .default, handler: { (action) in
             var items = self.byvMapListView.allItems()
@@ -165,7 +166,8 @@ class ViewController: UIViewController, ByvMapListDelegate, MKMapViewDelegate {
             if let path = Bundle.main.path(forResource: "stations-2", ofType: "json") {
                 do {
                     let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .alwaysMapped)
-                    let items = JSON.init(data: data).arrayValue.map({ (json) -> GasStation in
+                    let json = try JSON.init(data: data)
+                    let items = json.arrayValue.map({ (json) -> GasStation in
                         return GasStation.init(fromJson: json)
                     })
                     byvMapListView.addMoreItems(items)

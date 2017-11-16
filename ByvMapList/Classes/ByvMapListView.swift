@@ -39,7 +39,7 @@ class MyLayoutGuide: NSObject, UILayoutSupport {
     }
 }
 
-public enum ByvListState {
+@objc public enum ByvListState: Int {
     case header
     case single
     case list
@@ -49,15 +49,15 @@ public protocol ByvMapListCollectionViewCell {
     func updateWithObject(_ obj:Any, listState:ByvListState, at indexPath:IndexPath)
 }
 
-public protocol ByvMapListDelegate {
+@objc public protocol ByvMapListDelegate {
     func cellHeight() -> CGFloat
     func cellNibName() -> String
-    func itemSelected(_ item:MKAnnotation)
-    func didScrollToEnd()
     func pinView(mapView: MKMapView, annotation:MKAnnotation, selected:Bool) -> MKAnnotationView?
-    func selectPinView(annotationView: MKAnnotationView)
-    func deSelectPinView(annotationView: MKAnnotationView)
-    func listStateDidChange(_ newState: ByvListState)
+    @objc optional func itemSelected(_ item:MKAnnotation)
+    @objc optional func didScrollToEnd()
+    @objc optional func selectPinView(annotationView: MKAnnotationView)
+    @objc optional func deSelectPinView(annotationView: MKAnnotationView)
+    @objc optional func listStateDidChange(_ newState: ByvListState)
 }
 
 public protocol ByvMapListDataSource {
@@ -76,15 +76,15 @@ public class ByvMapListView: UIView {
         map.clusterManager.maxZoomLevel = 16
         return map
     }()
-    public var selectedScale:CGFloat = 2.0
-    public var listMapAlpha:CGFloat = 0.8
+    @IBInspectable public var selectedScale: CGFloat = 2.0
+    @IBInspectable public var listMapAlpha:CGFloat = 0.8
     
-    public var updateRegionAutomatically:Bool = true
-    public var centerRegionAtPoint:Bool = false
+    @IBInspectable public var updateRegionAutomatically:Bool = true
+    @IBInspectable public var centerRegionAtPoint:Bool = false
     public var regionCenterPoint:CLLocationCoordinate2D? = nil
-    public var regionRadius:Double = 0.0
-    public var showUserInRegion:Bool = true
-    public var maxAnnotationsInRegion:Int = 0
+    @IBInspectable public var regionRadius:Double = 0.0
+    @IBInspectable public var showUserInRegion:Bool = true
+    @IBInspectable public var maxAnnotationsInRegion:Int = 0
     
     public var _explorationMode:Bool = false
     public var explorationMode:Bool {
@@ -106,7 +106,7 @@ public class ByvMapListView: UIView {
         }
     }
     
-    public var clusterColor: UIColor? = nil
+    @IBInspectable public var clusterColor: UIColor? = nil
     var _showClustersUser:Bool = false
     var _showClusters:Bool = false
     public var showClusters:Bool {
@@ -151,12 +151,9 @@ public class ByvMapListView: UIView {
         }
     }
     
-    public var showUserLocation:Bool {
-        get {
-            return mapView.showsUserLocation
-        }
-        set(newValue) {
-            mapView.showsUserLocation = newValue
+    @IBInspectable public var showUserLocation:Bool = false {
+        didSet {
+            mapView.showsUserLocation = showUserLocation
         }
     }
     
@@ -173,12 +170,9 @@ public class ByvMapListView: UIView {
     public var dataSource:ByvMapListDataSource? = nil
     public var minListTop: CGFloat = 70.0
     var _listColor: UIColor = UIColor.white
-    public var listColor: UIColor {
-        get {
-            return _listColor
-        }
-        set(newValue) {
-            _listColor = newValue
+    @IBInspectable public var listColor: UIColor = .white {
+        didSet {
+            _listColor = listColor
             headerView.backgroundColor = _listColor
             if let collView = collectionView {
                 collView.backgroundColor = _listColor
@@ -202,6 +196,7 @@ public class ByvMapListView: UIView {
     var items:Array<MKAnnotation> = []
     public var listView: UIView = UIView()
     var headerView: UIView = UIView()
+    @IBOutlet public var xibHeader: UIView?
     var listState:ByvListState = .header
     var prePanListState:ByvListState = .header
     var isScrollToEndAlerted:Bool = false
@@ -332,6 +327,7 @@ public class ByvMapListView: UIView {
             view.removeFromSuperview()
         }
         headerView.setHeight(newHeader.bounds.size.height)
+        newHeader.removeFromSuperview()
         newHeader.addTo(headerView)
     }
     
@@ -354,6 +350,9 @@ public class ByvMapListView: UIView {
         
         headerView.backgroundColor = listColor
         headerView.setHeight(25)
+        if let view = xibHeader {
+            self.addHeaderView(view)
+        }
         
         cellHeight = delegate.cellHeight()
         let flowLayout = ByvFlowLayout()
@@ -374,7 +373,8 @@ public class ByvMapListView: UIView {
         listView.addTo(self, position: .bottom, height: self.headerHeight())
         listView.backgroundColor = listColor
         listView.layer.cornerRadius = listTopCornerRadius
-        listView.addShadow(opacity: 0.5, radius: 5.0)
+        listView.addShadow(opacity: 0.1, radius: 2.0)
+        listView.layer.shadowOffset = CGSize(width: 0, height: -4)
         
         listView.add(subViews: [headerView, collView], insets: UIEdgeInsetsMake(20, 0, 0, 0))
         
@@ -464,12 +464,12 @@ public class ByvMapListView: UIView {
         if let visibles = collectionView?.indexPathsForVisibleItems {
             collectionView?.reloadItems(at:visibles)
         }
-        if self.listState == .single && selectedItem != nil {
+        if self.listState == .single, let selectedItem = selectedItem {
             Timer.scheduledTimer(timeInterval: 0.1, target:self, selector: #selector(self.scrollToSelected), userInfo: nil, repeats: false)
             if fromList {
                 fromList = false
                 if delegate != nil {
-                    delegate?.itemSelected(selectedItem!)
+                    delegate?.itemSelected?(selectedItem)
                 }
             }
         } else if listState == .header {
@@ -481,13 +481,13 @@ public class ByvMapListView: UIView {
                 collectionView?.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
             }
         }
-        delegate?.listStateDidChange(self.listState)
+        delegate?.listStateDidChange?(self.listState)
         //        collectionView?.reloadData()
     }
     
     var startY:CGFloat = 0.0
     
-    func panHandler(sender: UIPanGestureRecognizer) {
+    @objc func panHandler(sender: UIPanGestureRecognizer) {
         
         if sender.state == .began {
             startY = sender.location(in: listView).y
@@ -588,7 +588,7 @@ public class ByvMapListView: UIView {
         }
     }
     
-    func scrollToSelected() {
+    @objc func scrollToSelected() {
         var rect = collectionView!.bounds
         rect.origin.x = UIScreen.main.bounds.size.width * CGFloat(indexOfSelectedItem())
         if collectionView?.contentOffset.x != rect.origin.x {
@@ -624,7 +624,7 @@ public class ByvMapListView: UIView {
             if scrollView.contentOffset.y >= scrollView.contentSize.height - scrollView.bounds.size.height - cellHeight && !isScrollToEndAlerted {
                 isScrollToEndAlerted = true
                 if delegate != nil {
-                    delegate?.didScrollToEnd()
+                    delegate?.didScrollToEnd?()
                 }
             }
         } else if listState == .single {
@@ -632,7 +632,7 @@ public class ByvMapListView: UIView {
             if scrollView.contentOffset.x >= scrollView.contentSize.width - scrollView.bounds.size.width && !isScrollToEndAlerted {
                 isScrollToEndAlerted = true
                 if delegate != nil {
-                    delegate?.didScrollToEnd()
+                    delegate?.didScrollToEnd?()
                 }
             }
         }
@@ -695,7 +695,7 @@ extension ByvMapListView: UICollectionViewDelegate {
             }
         } else {
             if delegate != nil {
-                delegate?.itemSelected(items[indexPath.row])
+                delegate?.itemSelected?(items[indexPath.row])
             }
         }
     }
@@ -763,7 +763,7 @@ extension ByvMapListView: MKMapViewDelegate {
                 self.mapView.clusterManager.selectAnnotation(cluster.firstAnnotation!, animated: false)
             }
         }
-        delegate?.selectPinView(annotationView: view)
+        delegate?.selectPinView?(annotationView: view)
         if _centerInSelectedPoi {
             mapView.setCenter(view.annotation!.coordinate, animated: true)
         }
@@ -796,7 +796,7 @@ extension ByvMapListView: MKMapViewDelegate {
         guard !(view.annotation is MKUserLocation) else {
             return
         }
-        delegate?.deSelectPinView(annotationView: view)
+        delegate?.deSelectPinView?(annotationView: view)
         UIView.animate(withDuration: 0.3, animations: {
             let transform:CGAffineTransform = CGAffineTransform.init(scaleX: 1.0/self.selectedScale, y: 1.0/self.selectedScale)
             view.transform = transform
@@ -809,7 +809,7 @@ extension ByvMapListView: MKMapViewDelegate {
         timer = Timer.scheduledTimer(timeInterval: 0.1, target:self, selector: #selector(deselectAnnotation(_:)), userInfo: nil, repeats: false)
     }
     
-    func deselectAnnotation(_ timer:Timer?) {
+    @objc func deselectAnnotation(_ timer:Timer?) {
         if listState == .single && selectedItem == nil {
             changeToState(.header)
         }

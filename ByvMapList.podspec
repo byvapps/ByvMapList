@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
     s.name             = 'ByvMapList'
-    s.version          = '1.1.1'
+    s.version          = '1.1.2'
     s.summary          = 'Utils for B&V Apps.'
 
     # This description is used to generate tags and improve search results.
@@ -29,11 +29,12 @@ Pod::Spec.new do |s|
     # s.social_media_url = 'https://twitter.com/byvapps'
 
     s.ios.deployment_target = '8.0'
+    s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
 
     s.source_files = 'ByvMapList/Classes/**/*'
 
     # s.public_header_files = 'Pod/Classes/**/*.h'
     s.frameworks = 'UIKit', 'MapKit'
-    s.dependency 'ByvUtils'
-    s.dependency 'BvMapCluster'
+    s.dependency 'ByvUtils', '~> 1.1'
+    s.dependency 'BvMapCluster', '~> 0.1'
 end
